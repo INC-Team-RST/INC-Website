@@ -7,14 +7,19 @@ import firebase from "firebase/app";
 import { firebaseApp } from "../firebase-config";
 import "firebase/firestore";
 import {db} from "../firebase-config";
-import { getFirestore, collection, addDoc, query, where, doc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, doc, getDoc, Timestamp } from "firebase/firestore";
 import { getStorage, ref,getDownloadURL, uploadBytesResumable} from "firebase/storage";
+import {setDoc} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const Index = () => {
   const router = useRouter();
   const file =useState("")
   const [user, setUser] = useState(null);
   const storage = getStorage();
+
+  const auth = getAuth();
+
   useEffect(() => {
     const accessToken = userAccessToken();
     if (!accessToken) return router.push("/login");
@@ -43,15 +48,27 @@ uploadTask.on('state_changed',
         console.log(error);
       }, 
       () => {
+        var path = `users/${auth.currentUser.uid}/documents`;
+        console.log(path);
         // Handle successful uploads on complete
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log('File available at', downloadURL);
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) =>  {
+          await addDoc(collection(db,path), {
+            name :  event.target.files[0].name,
+            Type:"UserDocument",
+            url : downloadURL,
+            createdAt: Timestamp.now(),
+            
         });
+  });
   })};
+  const getDocs = async () => {
+  
+  }
   const logout = () => {
     localStorage.clear();
     router.push("/login");
+
   };
 
   return (
@@ -74,6 +91,10 @@ uploadTask.on('state_changed',
       <div>
       <input type="file" onChange={handleFileUpload} />
     </div>
+    <button className="bg-yellow-400" onClick={getDocs}>
+      get docs
+
+    </button>
     </div>
   );
 };
