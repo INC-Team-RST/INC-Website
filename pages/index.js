@@ -143,7 +143,7 @@ const Index = () => {
   };
 
   return (
-    <div className="w-screen h-screen relative justify-center flex flex-col bg-[#eaf3fa] px-5">
+    <div className="w-screen h-screen relative justify-center flex flex-col bg-[#eaf3fa] px-5 bg-fixed bg-center bg-no-repeat  bg-[url('/accounting.png')]">
       <div>
         <div className="w-1/3 top-0 left-[28rem] text-[3rem] font-myfont font-bold text-[#2c458e] absolute ">
           Cloud Accounting
