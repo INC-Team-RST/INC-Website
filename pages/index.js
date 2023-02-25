@@ -8,11 +8,13 @@ import { firebaseApp } from "../firebase-config";
 import "firebase/firestore";
 import {db} from "../firebase-config";
 import { getFirestore, collection, addDoc, query, where, doc, getDoc } from "firebase/firestore";
+import { getStorage, ref,getDownloadURL, uploadBytesResumable} from "firebase/storage";
 
 const Index = () => {
   const router = useRouter();
+  const file =useState("")
   const [user, setUser] = useState(null);
-
+  const storage = getStorage();
   useEffect(() => {
     const accessToken = userAccessToken();
     if (!accessToken) return router.push("/login");
@@ -22,11 +24,31 @@ const Index = () => {
   }, []);
   
   const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    const storageRef = storage.ref();
-    const fileRef = storageRef.child(file.name);
-    await fileRef.put(file);
-  };
+    const Filereference=ref(storage,`images/${event.target.files[0].name}`);
+    const uploadTask = uploadBytesResumable(Filereference, file);
+uploadTask.on('state_changed', 
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      }, 
+      (error) => {
+        console.log(error);
+      }, 
+      () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log('File available at', downloadURL);
+        });
+  })};
   const logout = () => {
     localStorage.clear();
     router.push("/login");
