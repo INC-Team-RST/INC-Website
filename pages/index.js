@@ -32,10 +32,11 @@ const Index = () => {
   const router = useRouter();
   const [file, setFile] = useState("");
   const [type, setType] = useState("");
+
   const [user, setUser] = useState(null);
   const storage = getStorage();
   const [CAdocsarr, setCADocsarr] = useState([]);
-  const [Userdocsarr, setUserDocsarr] = useState({});
+  const [Userdocsarr, setUserDocsarr] = useState([]);
 
   const auth = getAuth();
 
@@ -122,10 +123,10 @@ const Index = () => {
       querySnapshot.forEach((doc) => {
         // doc.data() is never undefined for query doc snapshots
         //console.log(doc.id, " => ", doc.data()['url']);
-        if (doc.data()["Type"] == "UserDocument") {
-          arr.push(doc.data());
-        } else {
+        if (doc.data()["Type"] == "CADocument") {
           arr_ca.push(doc.data());
+        } else {
+          arr.push(doc.data());
         }
       });
     } catch (error) {
