@@ -5,7 +5,7 @@ import Image from "next/image";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { firebaseApp } from "../firebase-config";
 import { useRouter } from "next/router";
-import { getFirestore, collection, addDoc, query, where, doc, setDoc, getDoc} from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, doc, setDoc, getDoc, Timestamp} from "firebase/firestore";
 import {db} from "../firebase-config";
 import { getDatabase, ref, set } from "firebase/database";
 
@@ -23,11 +23,15 @@ const Login = () => {
     const [userInfo] = fetchUser();
     console.log(userInfo);
 
-    await setDoc(doc(db, "users", user.uid), {
+    await setDoc(doc(db, "Users", user.uid), {
+      caId: "NbHg6ADkRUgzqLO7C2uPqDRQgiZ2",
+      isCA: false,
       displayName: userInfo.displayName,
       email: userInfo.email,
       photoURL: userInfo.photoURL,
-      createdAt: user.metadata.creationTime,
+      lastMessage: Timestamp.now(),
+      phoneNumber:"",
+      uid:user.uid
     });
 
     router.push("/");

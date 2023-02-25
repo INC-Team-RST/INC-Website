@@ -8,12 +8,12 @@ import { getFirestore, collection } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyASwpceW04L8V0E-TT7b7Fwly6Pabx0mbE",
-  authDomain: "loginwith-firebase-bed8c.firebaseapp.com",
-  projectId: "loginwith-firebase-bed8c",
-  storageBucket: "loginwith-firebase-bed8c.appspot.com",
-  messagingSenderId: "348462014831",
-  appId: "1:348462014831:web:1daa0229fcf2bc765d089a"
+  apiKey: "AIzaSyC3WB026JbnVHgSJCW7kMv1PKUkeBws2b4",
+  authDomain: "cloud-accounting-2.firebaseapp.com",
+  projectId: "cloud-accounting-2",
+  storageBucket: "cloud-accounting-2.appspot.com",
+  messagingSenderId: "579553647862",
+  appId: "1:579553647862:web:1936bcf712ebc0889920d7"
 };
 // if (!firebase.apps.length) {
 //     firebase.initializeApp(firebaseConfig);
