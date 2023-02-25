@@ -34,10 +34,16 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center bg-red-300 relative">
+    <div className="w-screen h-screen flex flex-col justify-center items-center gap-4 bg-[#eaf3fa] relative px-10 pb-28">
+      <div className="flex flex-col font-myfont font-bold text-[#2c458e] w-1/2 items-center justify-center ">
+        
+        <Image src="/accounting.png" width={1000} height={500} alt="image"/>
+        <div className="text-[3rem] font-extrabold">Cloud Accounting</div>
+        <div className="text-[#fa9746] font-normal text-[2rem] items-center text-center">Managing & Securing <span className="text-[#3d4868]"> efficient end-to-end</span> CA-client interaction</div>
+      </div>
       
       <div
-        className="flex justify-center items-center border border-gray-300 p-2 bg-white bg-opacity-60 
+        className="flex justify-center w-1/2 my-2 items-center border border-gray-300 p-2 bg-white bg-opacity-60 
                     rounded-full cursor-pointer hover:shadow-md hover:bg-opacity-100 duration-150 ease-in-out z-10"
         onClick={signIn}
       >

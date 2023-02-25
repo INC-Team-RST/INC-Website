@@ -6,15 +6,15 @@ import Image from "next/image";
 import firebase from "firebase/app";
 import { firebaseApp } from "../firebase-config";
 import "firebase/firestore";
-import {db} from "../firebase-config";
+import { db } from "../firebase-config";
 import { getFirestore, collection, addDoc, query, where, doc, getDoc, Timestamp } from "firebase/firestore";
-import { getStorage, ref,getDownloadURL, uploadBytesResumable} from "firebase/storage";
-import {setDoc} from "firebase/firestore";
+import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const Index = () => {
   const router = useRouter();
-  const file =useState("")
+  const file = useState("")
   const [user, setUser] = useState(null);
   const storage = getStorage();
 
@@ -27,11 +27,11 @@ const Index = () => {
     //console.log(userInfo);
     setUser(userInfo);
   }, []);
-  
+
   const handleFileUpload = async (event) => {
-    const Filereference=ref(storage,`images/${event.target.files[0].name}`);
+    const Filereference = ref(storage, `images/${event.target.files[0].name}`);
     const uploadTask = uploadBytesResumable(Filereference, file);
-uploadTask.on('state_changed', 
+    uploadTask.on('state_changed',
       (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         console.log('Upload is ' + progress + '% done');
@@ -43,27 +43,28 @@ uploadTask.on('state_changed',
             console.log('Upload is running');
             break;
         }
-      }, 
+      },
       (error) => {
         console.log(error);
-      }, 
+      },
       () => {
         var path = `users/${auth.currentUser.uid}/documents`;
         console.log(path);
         // Handle successful uploads on complete
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) =>  {
-          await addDoc(collection(db,path), {
-            name :  event.target.files[0].name,
-            Type:"UserDocument",
-            url : downloadURL,
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          await addDoc(collection(db, path), {
+            name: event.target.files[0].name,
+            Type: "UserDocument",
+            url: downloadURL,
             createdAt: Timestamp.now(),
-            
+
+          });
         });
-  });
-  })};
+      })
+  };
   const getDocs = async () => {
-  
+
   }
   const logout = () => {
     localStorage.clear();
@@ -86,15 +87,15 @@ uploadTask.on('state_changed',
             {user?.email}
           </span>
         </p>
-       
+
       </div>
       <div>
-      <input type="file" onChange={handleFileUpload} />
-    </div>
-    <button className="bg-yellow-400" onClick={getDocs}>
-      get docs
+        <input type="file" onChange={handleFileUpload} />
+      </div>
+      <button className="bg-yellow-400" onClick={getDocs}>
+        get docs
 
-    </button>
+      </button>
     </div>
   );
 };
