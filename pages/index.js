@@ -7,42 +7,26 @@ import firebase from "firebase/app";
 import { firebaseApp } from "../firebase-config";
 import "firebase/firestore";
 import {db} from "../firebase-config";
-import { getFirestore, collection, addDoc, doc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, doc, getDoc } from "firebase/firestore";
 
 const Index = () => {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  async function handleSubmit(userInfo) {
-    try {
-      console.log("Adding user data to Firestore");
-      //add only if user google account mail does not exist in db
-      const docRef = doc(db, "users", userInfo.email);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) {
-        await addDoc(collection(db, "users"), {
-          displayName: userInfo.displayName,
-          email: userInfo.email,
-          photoURL: userInfo.photoURL,
-          isAdmin: false,
-        });
-        console.log("User data added to Firestore");
-      }
-      
-    } catch (error) {
-      console.error("Error adding user data to Firestore: ", error);
-    }
-  }
+
   useEffect(() => {
     const accessToken = userAccessToken();
     if (!accessToken) return router.push("/login");
     const [userInfo] = fetchUser();
-    console.log(userInfo);
+    //console.log(userInfo);
     setUser(userInfo);
-    
-    handleSubmit(userInfo);
-    //add user details to database in firestore
   }, []);
-
+  
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    const storageRef = storage.ref();
+    const fileRef = storageRef.child(file.name);
+    await fileRef.put(file);
+  };
   const logout = () => {
     localStorage.clear();
     router.push("/login");
@@ -63,7 +47,11 @@ const Index = () => {
             {user?.email}
           </span>
         </p>
+       
       </div>
+      <div>
+      <input type="file" onChange={handleFileUpload} />
+    </div>
     </div>
   );
 };

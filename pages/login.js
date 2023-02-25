@@ -1,9 +1,13 @@
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
+import { userAccessToken, fetchUser } from "../utils/fetchDetails";
 import Image from "next/image";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { firebaseApp } from "../firebase-config";
 import { useRouter } from "next/router";
+import { getFirestore, collection, addDoc, query, where, doc, setDoc, getDoc} from "firebase/firestore";
+import {db} from "../firebase-config";
+import { getDatabase, ref, set } from "firebase/database";
 
 const Login = () => {
   const firebaseAuth = getAuth(firebaseApp);
@@ -12,11 +16,20 @@ const Login = () => {
 
   const signIn = async () => {
     const { user } = await signInWithPopup(firebaseAuth, provider);
-    user.uid
     const { refreshToken, providerData } = user;
-    console.log(refreshToken, providerData);
+    //console.log(refreshToken, providerData);
     localStorage.setItem("user", JSON.stringify(providerData));
     localStorage.setItem("accessToken", JSON.stringify(refreshToken));
+    const [userInfo] = fetchUser();
+    console.log(userInfo);
+
+    await setDoc(doc(db, "users", user.uid), {
+      displayName: userInfo.displayName,
+      email: userInfo.email,
+      photoURL: userInfo.photoURL,
+      createdAt: user.metadata.creationTime,
+    });
+
     router.push("/");
   };
 
