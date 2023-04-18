@@ -8,6 +8,7 @@ import Link from "next/link";
 import { firebaseApp } from "../firebase-config";
 import "firebase/firestore";
 import { db } from "../firebase-config";
+import Navbar from "../components/Navbar";
 import {
   getFirestore,
   collection,
@@ -50,7 +51,7 @@ const Index = () => {
     const [userInfo] = fetchUser();
     //console.log(userInfo);
     setUser(userInfo);
-  }, []);
+  },[]);
 
   const handleFileUpload =  (event) => {
     const Filereference = ref(storage, `Documents/${file.name}`);
@@ -143,44 +144,25 @@ const Index = () => {
   };
 
   return (
-    <div className="w-screen h-screen relative justify-center flex flex-col bg-[#eaf3fa] px-5 bg-fixed bg-center bg-no-repeat  bg-[url('/accounting.png')]">
-      <div>
-        <div className="w-1/3 top-0 left-[28rem] text-[3rem] font-myfont font-bold text-[#2c458e] absolute ">
-          Cloud Accounting
-        </div>
-        <div className="w-1/4 p-4 top-0 right-0 absolute bg-[#eaf3fa] shadow-lg rounded-md flex justify-start items-center">
-          <IoLogOut
-            fontSize={50}
-            className="absolute top-3 right-3 cursor-pointer text-gray-600"
-            onClick={logout}
-          />
-          <Image src={user?.photoURL} referrerPolicy="no-referrer" className="rounded-md shadow-md" alt="" width={50} height={50} />
-          <p className="text-2xl font-sans font-semibold ml-2">
-            {user?.displayName}
-            <span className="block text-xs font-serif font-normal">
-              {user?.email}
-            </span>
-          </p>
+    <div className="w-screen h-screen flex flex-col bg-fixed bg-center bg-no-repeat bg-[url('/accounting.png')]">
+     <Navbar photoURL={user?.photoURL} displayName={user?.displayName} email={user?.email}/>
 
-        </div>
-      </div>
-
-      <div className="flex flex-row gap-4 ">
+      <div className="flex px-10 flex-row gap-4 ">
         <div className="flex flex-col ">
           <div>
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-20 align-center my-4 rounded-2xl" onClick={returnDocs}>
+            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl" onClick={returnDocs}>
               Get Documents uploaded by You
             </button>
 
           </div>
           <div>
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-20 align-center my-4 rounded-2xl" onClick={returnDocs_CA}>
+            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl" onClick={returnDocs_CA}>
               Get Documents uploaded by CA
             </button>
           </div>
           <div className="flex flex-col">
             <input type="file" onChange={handleChange} />
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-20 align-center my-4 rounded-2xl" onClick={handleFileUpload}>Upload</button>
+            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl" onClick={handleFileUpload}>Upload</button>
           </div>
         </div>
 
