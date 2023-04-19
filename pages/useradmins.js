@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { userAccessToken, fetchUser } from "../utils/fetchDetails";
 import { useRouter } from "next/router";
+import Image from "next/image";
+import { IoLogOut } from "react-icons/io5";
+import Link from "next/link";
 
 const Useradmins = () => {
   const router = useRouter();
@@ -11,7 +14,6 @@ const Useradmins = () => {
   const [adminService, setAdminService] = useState("NOT_SELECTED");
   // const [accessToken, setAccessToken] = useState(userAccessToken); // declare accessToken state variable
 
-  
   useEffect(() => {
     var accessToken = userAccessToken();
     if (!accessToken) return router.push("/");
@@ -37,11 +39,10 @@ const Useradmins = () => {
     };
 
     fetchAdminsData();
-
   }, []);
   const fetchAddAdminsData = async (profession) => {
     var accessToken1 = userAccessToken();
-    console.log("in api function "+profession);
+    console.log("in api function " + profession);
     console.log(accessToken1);
     try {
       const response = await fetch(
@@ -50,11 +51,11 @@ const Useradmins = () => {
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken1}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            profession: profession
-          })
+            profession: profession,
+          }),
         }
       );
       const data = await response.json();
@@ -65,7 +66,7 @@ const Useradmins = () => {
     }
   };
   const postAddAdmin = async (admin) => {
-    console.log("chosen admin "+admin.display_name)
+    console.log("chosen admin " + admin.display_name);
     var accessToken2 = userAccessToken();
     console.log("in post function");
     console.log(accessToken2);
@@ -76,11 +77,11 @@ const Useradmins = () => {
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken2}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            id: admin.id
-          })
+            id: admin.id,
+          }),
         }
       );
       const data = await response.json();
@@ -99,41 +100,74 @@ const Useradmins = () => {
     console.log(adminService);
     fetchAddAdminsData(adminService);
   };
+  const logout = () => {
+    localStorage.clear();
+    router.push("/");
+  };
   return (
     <div className="bg-[#eaf3fa] w-screen h-screen flex flex-col text-center items-center font-myfont py-10 px-10">
+      <Image
+        src={user?.photoURL}
+        referrerPolicy="no-referrer"
+        className="rounded-md shadow-md"
+        alt=""
+        width={40}
+        height={40}
+      />
+      <p className="text-lg font-sans font-semibold ml-2">
+        {user?.displayName}
+        <span className="block text-xs font-serif font-normal">{user?.email}</span>
+      </p>
+      <IoLogOut
+        fontSize={40}
+        className="cursor-pointer text-gray-600 mx-3"
+        onClick={logout}
+      />
       <p>Your admins for {user?.email} are:</p>
       <p className="text-[#30498f] font-bold text-4xl">
         Your Service Agent Admins
       </p>
       <div className="grid grid-cols-4 flex-wrap justify-items-center justify-center items-center my-10 gap-10">
         {admins.map((admin) => (
-          <div
+          <Link
             key={admin.id}
             className="flex flex-col rounded-2xl bg-[#fa9746] font-myfont p-10 w-full"
+            href={`/users/${admin.id}`}
+            // onClick={()=>(router.push(`/users/${admin.id}`))}
           >
             <p className="text-[#3b3b3c] font-semibold text-base">
               {admin.display_name}
             </p>
             <p className="text-[#3b3b3c]  text-base">{admin.profession}</p>
-          </div>
+          </Link>
         ))}
       </div>
-      <button className="rounded-2xl text-[#30498f] font-bold text-2xl shadow-md w-fit justify-center shadow-slate-400 p-6"  onClick={() => setAddAdmin(!addAdmin)}>
-          Add New Admin
+      <button
+        className="rounded-2xl text-[#30498f] font-bold text-2xl shadow-md w-fit justify-center shadow-slate-400 p-6"
+        onClick={() => setAddAdmin(!addAdmin)}
+      >
+        Add New Admin
       </button>
-      {addAdmin && <div className="flex flex-row pt-4">
-        <p className="text-[1.2rem] py-2"> Choose the service / profession category</p>
-        <select onChange={handleOptionChange} className="mx-4 bg-[#acc3fb] rounded-2xl px-3 py-2 justify-center items-center">
-          <option  value="NOT_SELECTED">Select an option</option>
-          <option  value="CA">C.A.</option>
-          <option  value="LAWYER">Lawyer</option>
-          <option  value="POLICY_AGENT">Policy Agent</option>
-          <option  value="DOCTOR">Doctor</option>
-          <option  value="TEACHER">Teacher</option>
-          <option  value="ARCHITECT">Architect</option>
-        </select>
-        </div>   
-      }
+      {addAdmin && (
+        <div className="flex flex-row pt-4">
+          <p className="text-[1.2rem] py-2">
+            {" "}
+            Choose the service / profession category
+          </p>
+          <select
+            onChange={handleOptionChange}
+            className="mx-4 bg-[#acc3fb] rounded-2xl px-3 py-2 justify-center items-center"
+          >
+            <option value="NOT_SELECTED">Select an option</option>
+            <option value="CA">C.A.</option>
+            <option value="LAWYER">Lawyer</option>
+            <option value="POLICY_AGENT">Policy Agent</option>
+            <option value="DOCTOR">Doctor</option>
+            <option value="TEACHER">Teacher</option>
+            <option value="ARCHITECT">Architect</option>
+          </select>
+        </div>
+      )}
       <div className="flex flex-wrap justify-center items-center my-10 gap-10">
         {adminstoadd.map((admin) => (
           <div

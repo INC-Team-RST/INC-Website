@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { userAccessToken, fetchUser } from "../utils/fetchDetails";
+import { userAccessToken, fetchUser } from "../../utils/fetchDetails";
 import { useRouter } from "next/router";
 import { IoLogOut } from "react-icons/io5";
 import Image from "next/image";
 import firebase from "firebase/app";
 import Link from "next/link";
-import { firebaseApp } from "../firebase-config";
+import { firebaseApp } from "../../firebase-config";
 import "firebase/firestore";
-import { db } from "../firebase-config";
-import Navbar from "../components/Navbar";
+import { db } from "../../firebase-config";
+import Navbar from "../../components/Navbar";
 import {
   getFirestore,
   collection,
@@ -40,10 +40,13 @@ const Index = () => {
   const [Userdocsarr, setUserDocsarr] = useState([]);
 
   const auth = getAuth();
-
+  console.log(router.query)
   function handleChange(event) {
     setFile(event.target.files[0]);
   }
+  const  adminId  = router.query.dashboard;
+  const [admin, setAdmin] = useState(null);
+  const [admins, setAdmins] = useState([]);
 
   useEffect(() => {
     const accessToken = userAccessToken();
@@ -51,7 +54,64 @@ const Index = () => {
     const [userInfo] = fetchUser();
     //console.log(userInfo);
     setUser(userInfo);
+    const fetchAdminsData = async () => {
+      try {
+        const response = await fetch(
+          "https://client-hive.onrender.com/api/user/admins",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        const data = await response.json();
+        setAdmins(data);
+      } catch (error) {
+        console.error("There was an error fetching the admins data:", error);
+      }
+    };
+
+    fetchAdminsData();
   },[]);
+
+ 
+  // useEffect(() => {
+  //   const fetchAdminsData = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         "https://client-hive.onrender.com/api/user/admins",
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${accessToken}`,
+  //           },
+  //         }
+  //       );
+  //       const data = await response.json();
+  //       setAdmins(data);
+  //     } catch (error) {
+  //       console.error("There was an error fetching the admins data:", error);
+  //     }
+  //   };
+
+  //   fetchAdminsData();
+  // }, []);
+  console.log(admins)
+  useEffect(() => {
+    if (adminId && admins.length > 0) {
+      const foundAdmin = admins.find((admin) => admin.id === parseInt(adminId));
+
+      console.log(foundAdmin)
+      if (foundAdmin) {
+        setAdmin(foundAdmin);
+      } else {
+        router.push('/404'); // redirect to custom 404 page
+      }
+    }
+  },[adminId,admins,router]);
+  // console.log("admin "+ admin.id)
+
+ 
+
 
   const handleFileUpload =  (event) => {
     const Filereference = ref(storage, `Documents/${file.name}`);
@@ -146,7 +206,11 @@ const Index = () => {
   return (
     <div className="w-screen h-screen flex flex-col bg-fixed bg-center bg-no-repeat bg-[url('/accounting.png')]">
      <Navbar photoURL={user?.photoURL} displayName={user?.displayName} email={user?.email}/>
-
+     <div>
+     
+      {/* <p>{admin.display_name}</p>
+      <p>{admin.profession}</p> */}
+    </div>
       <div className="flex px-10 flex-row gap-4 ">
         <div className="flex flex-col ">
           <div>
@@ -194,5 +258,25 @@ const Index = () => {
     </div>
   );
 };
+
+// export async function getServerSideProps(context) {
+//   const { adminId } = context.params
+//   const res = await fetch(`https://client-hive.onrender.com/api/user/admins`)
+//   const admins = await res.json()
+//   console.log(admins)
+//   // const admin = admins.find(admin => admin.id === adminId)
+
+//   // if (!admin) {
+//   //   return {
+//   //     notFound: true
+//   //   }
+//   // }
+
+//   return {
+//     props: {
+//       admins
+//     }
+//   }
+// }
 
 export default Index;

@@ -24,6 +24,7 @@ const Login = () => {
   const provider = new GoogleAuthProvider();
   const router = useRouter();
 
+
   const signIn = async () => {
     const { user } = await signInWithPopup(firebaseAuth, provider);
     const { refreshToken, providerData } = user;

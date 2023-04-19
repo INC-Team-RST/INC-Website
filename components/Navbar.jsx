@@ -6,7 +6,7 @@ function Navbar({photoURL, displayName, email}) {
     const router = useRouter();
     const logout = () => {
         localStorage.clear();
-        router.push("/login");
+        router.push("/");
       };
   return (
       <nav className="bg-[#eaf3fa]">
