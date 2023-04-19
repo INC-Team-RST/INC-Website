@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { FcGoogle } from "react-icons/fc";
 import { userAccessToken, fetchUser } from "../utils/fetchDetails";
-import { useRouter } from "next/router";
-import { IoLogOut } from "react-icons/io5";
 import Image from "next/image";
-import firebase from "firebase/app";
-import Link from "next/link";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { firebaseApp } from "../firebase-config";
-import "firebase/firestore";
-import { db } from "../firebase-config";
-import Navbar from "../components/Navbar";
+import { useRouter } from "next/router";
 import {
   getFirestore,
   collection,
@@ -16,183 +12,133 @@ import {
   query,
   where,
   doc,
+  setDoc,
   getDoc,
   Timestamp,
-  getDocs,
 } from "firebase/firestore";
-import {
-  getStorage,
-  ref,
-  getDownloadURL,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { setDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { db } from "../firebase-config";
+import { getDatabase, ref, set } from "firebase/database";
 
-const Index = () => {
+const Login = () => {
+  const firebaseAuth = getAuth(firebaseApp);
+  const provider = new GoogleAuthProvider();
   const router = useRouter();
-  const [file, setFile] = useState("");
-  const [type, setType] = useState("");
 
-  const [user, setUser] = useState(null);
-  const storage = getStorage();
-  const [CAdocsarr, setCADocsarr] = useState([]);
-  const [Userdocsarr, setUserDocsarr] = useState([]);
-
-  const auth = getAuth();
-
-  function handleChange(event) {
-    setFile(event.target.files[0]);
-  }
-
-  useEffect(() => {
-    const accessToken = userAccessToken();
-    if (!accessToken) return router.push("/login");
+  const signIn = async () => {
+    const { user } = await signInWithPopup(firebaseAuth, provider);
+    const { refreshToken, providerData } = user;
+    //console.log(refreshToken, providerData);
+    localStorage.setItem("user", JSON.stringify(providerData));
+    localStorage.setItem("accessToken", JSON.stringify(refreshToken));
     const [userInfo] = fetchUser();
-    //console.log(userInfo);
-    setUser(userInfo);
-  },[]);
+    // console.log(user);
+    // console.log(user.uid);
 
-  const handleFileUpload =  (event) => {
-    const Filereference = ref(storage, `Documents/${file.name}`);
-    const uploadTask =  uploadBytesResumable(Filereference, file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
-        switch (snapshot.state) {
-          case "paused":
-            console.log("Upload is paused");
-            break;
-          case "running":
-            console.log("Upload is running");
-            break;
-        }
+    const userExists = await fetch('https://client-hive.onrender.com/api/user/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: user.uid
+      })
+    })
+    .then(response => 
+      response.json()
+    ).then(data => {
+      console.log(data.message);
+      return data.message;
+    })
+    .catch(error => {
+      console.error('There was an error checking if user exists:', error);
+      return true; // Treat as if user exists to prevent POST request
+    });
+    
+    console.log(userExists)
+
+  if (!userExists) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json' ,
+    },
+      body: JSON.stringify({
+        photoURL: userInfo.photoURL,
+        uid: user.uid,
+        email: userInfo.email,
+        display_name: userInfo.displayName,
+        phone: ""
+      })
+    };
+    fetch('https://client-hive.onrender.com/api/user/add', requestOptions)
+      .then(response => {
+        return response.json();
+      })
+      .then(data => {
+        console.log(data); // response data from backend
+      })
+      .catch(error => {
+        console.error('There was an error making the request:', error);
+      });
+    }
+    else{
+      const requestOptions = {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' ,
       },
-      (error) => {
-        console.log(error);
-      },
-      () => {
-        var path = `Users/${auth.currentUser.uid}/Documents`;
-        console.log(path);
-        // Handle successful uploads on complete
-        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-          await addDoc(collection(db, path), {
-            name: file.name,
-            Type: "UserDocument",
-            url: downloadURL,
-            createdAt: Timestamp.now(),
-          });
+        body: JSON.stringify({
+          token: refreshToken,
+          uid: user.uid,
+        })
+      };
+      fetch('https://client-hive.onrender.com/api/user/login', requestOptions)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log(data); // response data from backend
+        })
+        .catch(error => {
+          console.error('There was an error making the request:', error);
         });
-      }
-    );
-  };
-  const returnDocs = async () => {
-    try {
-      var path = `Users/${auth.currentUser.uid}/Documents`;
-      var arr = [];
-      var arr_ca = [];
-      const querySnapshot = await getDocs(collection(db, path));
-      console.log("Rohan");
-      querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        //console.log(doc.id, " => ", doc.data()['url']);
-        if (doc.data()["Type"] == "UserDocument") {
-          arr.push(doc.data());
-        } else {
-          arr_ca.push(doc.data());
-        }
-      });
-    } catch (error) {
-      console.log(error);
     }
-    setUserDocsarr(arr);
-    setType("User");
-    //setCADocsarr(arr_ca);
-    //console.log(arr)
-  };
-  const returnDocs_CA = async () => {
-    try {
-      var path = `Users/${auth.currentUser.uid}/Documents`;
-      var arr = [];
-      var arr_ca = [];
-      const querySnapshot = await getDocs(collection(db, path));
-      console.log("Rohan");
-      querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        //console.log(doc.id, " => ", doc.data()['url']);
-        if (doc.data()["Type"] == "CADocument") {
-          arr_ca.push(doc.data());
-        } else {
-          arr.push(doc.data());
-        }
-      });
-    } catch (error) {
-      console.log(error);
-    }
-    //setUserDocsarr(arr);
-    setCADocsarr(arr_ca);
-    setType("CA");
-    //console.log(arr)
-  };
-  const logout = () => {
-    localStorage.clear();
-    router.push("/login");
+
+    router.push("/useradmins");
   };
 
   return (
-    <div className="w-screen h-screen flex flex-col bg-fixed bg-center bg-no-repeat bg-[url('/accounting.png')]">
-     <Navbar photoURL={user?.photoURL} displayName={user?.displayName} email={user?.email}/>
-
-      <div className="flex px-10 flex-row gap-4 ">
-        <div className="flex flex-col ">
-          <div>
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl" onClick={returnDocs}>
-              Get Documents uploaded by You
-            </button>
-
-          </div>
-          <div>
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl" onClick={returnDocs_CA}>
-              Get Documents uploaded by CA
-            </button>
-          </div>
-          <div className="flex flex-col">
-            <input type="file" onChange={handleChange} />
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl" onClick={handleFileUpload}>Upload</button>
-          </div>
+    <div className="w-screen h-screen flex flex-col justify-center items-center gap-4 bg-[#eaf3fa] relative px-10 pb-28">
+      <div className="flex flex-col font-myfont font-bold text-[#2c458e] w-1/2 items-center justify-center ">
+        <Image src="/accounting.png" width={1000} height={500} alt="image" />
+        <div className="text-[3rem] font-extrabold">Client Hive</div>
+        <div className="text-[#fa9746] font-normal text-[2rem] items-center text-center">
+          Managing & Securing{" "}
+          <span className="text-[#3d4868]"> efficient end-to-end</span>{" "}
+          CA-client interaction
         </div>
-
-        <div className="flex ml-10 mt-4 flex-row">
-          {type==="User" && <div className="flex flex-col gap-4">
-            {Userdocsarr.map((doc) => (
-              <Link href={doc.url} key={doc.id}>
-                <div className="bg-[#e4edfa] rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-64 flex flex-row" >
-                  <Image src="/file.png" alt="icon" width={60} height={60} />
-                  {doc.name}
-                </div>
-              </Link>
-            ))}
-          </div>}
-          {type==="CA" && <div className="flex flex-col gap-4">
-            {CAdocsarr.map((doc) => (
-              <Link href={doc.url} key={doc.id}>
-                <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row" >
-                  <Image src="/file.png" alt="icon" width={60} height={60} />
-                  {doc.name}
-                </div>
-              </Link>
-            ))}
-          </div>}
+      </div>
+      <div className="flex flex-row gap-4">
+        <div
+          className="flex justify-center items-center border border-gray-300 p-2 px-4 bg-white bg-opacity-60 
+                    rounded-full cursor-pointer hover:shadow-md hover:bg-opacity-100 duration-150 ease-in-out z-10"
+          onClick={signIn}
+        >
+          <FcGoogle fontSize={30} />
+          <p className="text-lg font-semibold ml-4">Admin Google Sign In</p>
         </div>
-      
-
+        <div
+          className="flex justify-center items-center border border-gray-300 p-2 px-4 bg-white bg-opacity-60 
+                    rounded-full cursor-pointer hover:shadow-md hover:bg-opacity-100 duration-150 ease-in-out z-10"
+          onClick={signIn}
+        >
+          <FcGoogle fontSize={30} />
+          <p className="text-lg font-semibold ml-4">Client Google Sign In</p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Index;
+export default Login;
