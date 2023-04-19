@@ -65,6 +65,7 @@ const Useradmins = () => {
     }
   };
   const postAddAdmin = async (admin) => {
+    console.log("chosen admin "+admin.display_name)
     var accessToken2 = userAccessToken();
     console.log("in post function");
     console.log(accessToken2);
@@ -138,7 +139,7 @@ const Useradmins = () => {
           <div
             key={admin.id}
             className="flex flex-col rounded-2xl hover:bg-[#fa9746] border-[0.1rem] border-black  hover:border-none font-myfont p-10"
-            onClick={postAddAdmin(admin)}
+            onClick={() => postAddAdmin(admin)}
           >
             <p className="text-[#3b3b3c] font-semibold text-base">
               {admin.display_name}
@@ -146,8 +147,6 @@ const Useradmins = () => {
             <p className="text-[#3b3b3c]  text-base">{admin.profession}</p>
           </div>
         ))}
-        
-
       </div>
     </div>
   );
