@@ -58,14 +58,15 @@ const Login = () => {
     const requestOptions = {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json' ,
+        'Content-Type': 'application/json',
     },
       body: JSON.stringify({
         photoURL: userInfo.photoURL,
         uid: user.uid,
         email: userInfo.email,
         display_name: userInfo.displayName,
-        phone: ""
+        phone: "",
+        token: refreshToken
       })
     };
     fetch('https://client-hive.onrender.com/api/user/add', requestOptions)
@@ -106,7 +107,95 @@ const Login = () => {
     }
 
     router.push("/useradmins");
+
+  }
+
+    const adminSignIn = async () => {
+      const { user } = await signInWithPopup(firebaseAuth, provider);
+      const { refreshToken, providerData } = user;
+      //console.log(refreshToken, providerData);
+      localStorage.setItem("user", JSON.stringify(providerData));
+      localStorage.setItem("accessToken", JSON.stringify(refreshToken));
+      const [userInfo] = fetchUser();
+      // console.log(user);
+      // console.log(user.uid);
+  
+      const userExists = await fetch('https://client-hive.onrender.com/api/admin/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: user.uid
+        })
+      })
+      .then(response => 
+        response.json()
+      ).then(data => {
+        console.log(data.message);
+        return data.message;
+      })
+      .catch(error => {
+        console.error('There was an error checking if user exists:', error);
+        return true; // Treat as if user exists to prevent POST request
+      });
+      
+      console.log(userExists)
+  
+    if (!userExists) {
+      const requestOptions = {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' ,
+      },
+        body: JSON.stringify({
+          photoURL: userInfo.photoURL,
+          uid: user.uid,
+          email: userInfo.email,
+          display_name: userInfo.displayName,
+          phone: "",
+          token: refreshToken
+        })
+      };
+      console.log(refreshToken)
+      fetch('https://client-hive.onrender.com/api/admin/add', requestOptions)
+        .then(response => {
+          return response.json();
+        })
+        .then(data => {
+          console.log(data); // response data from backend
+        })
+        .catch(error => {
+          console.error('There was an error making the request:', error);
+        });
+      }
+      else{
+        const requestOptions = {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json' ,
+        },
+          body: JSON.stringify({
+            token: refreshToken,
+            uid: user.uid,
+          })
+        };
+        fetch('https://client-hive.onrender.com/api/admin/login', requestOptions)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log(data); // response data from backend
+          })
+          .catch(error => {
+            console.error('There was an error making the request:', error);
+          });
+      }
+  
+      router.push("/adminpage");
   };
+
 
   return (
     <div className="w-screen h-screen flex flex-col justify-center items-center gap-4 bg-[#eaf3fa] relative px-10 pb-28">
@@ -123,7 +212,7 @@ const Login = () => {
         <div
           className="flex justify-center items-center border border-gray-300 p-2 px-4 bg-white bg-opacity-60 
                     rounded-full cursor-pointer hover:shadow-md hover:bg-opacity-100 duration-150 ease-in-out z-10"
-          onClick={signIn}
+          onClick={adminSignIn}
         >
           <FcGoogle fontSize={30} />
           <p className="text-lg font-semibold ml-4">Admin Google Sign In</p>
