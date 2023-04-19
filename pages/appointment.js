@@ -23,9 +23,8 @@ function AppointmentBooking() {
   };
 
   const handleSubmit = (event) => {
-    console.log(date.toISOString());
-    finalStartTime =date.toISOString().substring(0, 11)+startTime+".000"+"Z";
-    finalEndTime =date.toISOString().substring(0, 11)+endTime+".000"+"Z";
+    finalStartTime =date.toISOString().substring(0, 8)+date.getDate()+"T"+startTime+".000"+"Z";
+    finalEndTime =date.toISOString().substring(0, 8)+date.getDate()+"T"+endTime+".000"+"Z";
     console.log(finalStartTime);
     console.log(finalEndTime);
     event.preventDefault();
