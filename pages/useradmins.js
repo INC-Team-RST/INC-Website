@@ -32,6 +32,7 @@ const Useradmins = () => {
   useEffect(() => {
     var accessToken = userAccessToken();
     if (!accessToken) return router.push("/");
+    console.log(accessToken);
     const [userInfo] = fetchUser();
     //console.log(userInfo);
     setUser(userInfo);
@@ -100,7 +101,28 @@ const Useradmins = () => {
     console.log(adminService);
     fetchAddAdminsData(adminService);
   };
-  const logout = () => {
+  const logout = async() => {
+    const accessToken3 = userAccessToken();
+    console.log(accessToken3);
+    try {
+      const response = await fetch(
+        "https://client-hive.onrender.com/api/user/logout",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken3}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: accessToken3,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
     localStorage.clear();
     router.push("/");
   };
