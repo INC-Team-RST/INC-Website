@@ -9,6 +9,7 @@ import { firebaseApp } from "../../firebase-config";
 import "firebase/firestore";
 import { db } from "../../firebase-config";
 import Navbar from "../../components/Navbar";
+import AppointmentBooking from "../../components/Appointment";
 import {
   getFirestore,
   collection,
@@ -38,13 +39,18 @@ const Index = () => {
   const storage = getStorage();
   const [CAdocsarr, setCADocsarr] = useState([]);
   const [Userdocsarr, setUserDocsarr] = useState([]);
+  
+  //navbar states
+  const [appointment, setAppointment]= useState(false)
+  const [documents, setDocuments]= useState(false)
+
 
   const auth = getAuth();
-  console.log(router.query)
+  console.log(router.query);
   function handleChange(event) {
     setFile(event.target.files[0]);
   }
-  const  adminId  = router.query.dashboard;
+  const adminId = router.query.dashboard;
   const [admin, setAdmin] = useState(null);
   const [admins, setAdmins] = useState([]);
 
@@ -72,9 +78,8 @@ const Index = () => {
     };
 
     fetchAdminsData();
-  },[]);
+  }, []);
 
- 
   // useEffect(() => {
   //   const fetchAdminsData = async () => {
   //     try {
@@ -95,27 +100,24 @@ const Index = () => {
 
   //   fetchAdminsData();
   // }, []);
-  console.log(admins)
+  console.log(admins);
   useEffect(() => {
     if (adminId && admins.length > 0) {
       const foundAdmin = admins.find((admin) => admin.id === parseInt(adminId));
 
-      console.log(foundAdmin)
+      console.log(foundAdmin);
       if (foundAdmin) {
         setAdmin(foundAdmin);
       } else {
-        router.push('/404'); // redirect to custom 404 page
+        router.push("/404"); // redirect to custom 404 page
       }
     }
-  },[adminId,admins,router]);
+  }, [adminId, admins, router]);
   // console.log("admin "+ admin.id)
 
- 
-
-
-  const handleFileUpload =  (event) => {
+  const handleFileUpload = (event) => {
     const Filereference = ref(storage, `Documents/${file.name}`);
-    const uploadTask =  uploadBytesResumable(Filereference, file);
+    const uploadTask = uploadBytesResumable(Filereference, file);
     uploadTask.on(
       "state_changed",
       (snapshot) => {
@@ -140,11 +142,13 @@ const Index = () => {
         // Handle successful uploads on complete
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          console.log(downloadURL);
           await addDoc(collection(db, path), {
             name: file.name,
             Type: "UserDocument",
             url: downloadURL,
             createdAt: Timestamp.now(),
+            
           });
         });
       }
@@ -200,60 +204,150 @@ const Index = () => {
   };
   const logout = () => {
     localStorage.clear();
-    router.push("/login");
+    router.push("/");
   };
-
+  // bg-[url('/accounting.png')]
   return (
-    <div className="w-screen h-screen flex flex-col bg-fixed bg-center bg-no-repeat bg-[url('/accounting.png')]">
-     <Navbar photoURL={user?.photoURL} displayName={user?.displayName} email={user?.email}/>
-     <div>
-     
-      {/* <p>{admin.display_name}</p>
-      <p>{admin.profession}</p> */}
-    </div>
+    <div className="w-screen h-screen flex flex-col bg-fixed bg-center bg-no-repeat ">
+      <nav className="bg-[#eaf3fa]">
+        <div className="w-full px-12 h-[5rem] align-middle flex flex-wrap items-center justify-between font-myfont mx-auto">
+          <a href="https://flowbite.com/" className="flex items-center">
+            <span className="self-center text-3xl font-extrabold text-[#2c458e] whitespace-nowrap dark:text-white">
+              ClientHive
+            </span>
+          </a>
+          <button
+            data-collapse-toggle="navbar-default"
+            type="button"
+            className="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+            aria-controls="navbar-default"
+            aria-expanded="false"
+          >
+            <span className="sr-only">Open main menu</span>
+            <svg
+              className="w-6 h-6"
+              aria-hidden="true"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+          </button>
+          <div className="hidden w-full md:block md:w-auto" id="navbar-default">
+            <ul className="font-medium flex justify-center items-center flex-col p-4 md:p-0 mt-4 border bg-[#eaf3fa] border-gray-100 rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:border-0">
+              <li>
+                <a
+                  href="#"
+                  className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
+                  aria-current="page"
+                >
+                  Find Admin
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  onClick={()=>(setDocuments(!documents))}
+                  className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                >
+                  Submit and Get Documents
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  onClick={()=>(setAppointment(!appointment))}
+                  className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                >
+                  Schedule an appointment
+                </a>
+              </li>
+              <li className="flex rounded-md py-2 gap-3">
+                <Image
+                  src={user?.photoURL}
+                  referrerPolicy="no-referrer"
+                  className="rounded-full shadow-md"
+                  alt=""
+                  width={50}
+                  height={50}
+                />
+                <p className="text-lg font-sans font-semibold ml-2">
+                  {user?.displayName}
+                  <span className="block text-xs font-serif font-normal">
+                    {user?.email}
+                  </span>
+                </p>
+                <IoLogOut
+                  fontSize={40}
+                  className="cursor-pointer text-gray-600 mx-3"
+                  onClick={logout}
+                />
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <div></div>
       <div className="flex px-10 flex-row gap-4 ">
-        <div className="flex flex-col ">
+        {documents==true && <div className="flex flex-col ">
           <div>
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl" onClick={returnDocs}>
+            <button
+              className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+              onClick={returnDocs}
+            >
               Get Documents uploaded by You
             </button>
-
           </div>
           <div>
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl" onClick={returnDocs_CA}>
+            <button
+              className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+              onClick={returnDocs_CA}
+            >
               Get Documents uploaded by CA
             </button>
           </div>
           <div className="flex flex-col">
             <input type="file" onChange={handleChange} />
-            <button className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl" onClick={handleFileUpload}>Upload</button>
+            <button
+              className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl"
+              onClick={handleFileUpload}
+            >
+              Upload
+            </button>
           </div>
-        </div>
-
+        </div>}
+        {appointment==true && <AppointmentBooking adminId={adminId}/>}
         <div className="flex ml-10 mt-4 flex-row">
-          {type==="User" && <div className="flex flex-col gap-4">
-            {Userdocsarr.map((doc) => (
-              <Link href={doc.url} key={doc.id}>
-                <div className="bg-[#e4edfa] rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-64 flex flex-row" >
-                  <Image src="/file.png" alt="icon" width={60} height={60} />
-                  {doc.name}
-                </div>
-              </Link>
-            ))}
-          </div>}
-          {type==="CA" && <div className="flex flex-col gap-4">
-            {CAdocsarr.map((doc) => (
-              <Link href={doc.url} key={doc.id}>
-                <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row" >
-                  <Image src="/file.png" alt="icon" width={60} height={60} />
-                  {doc.name}
-                </div>
-              </Link>
-            ))}
-          </div>}
+          {type === "User" && (
+            <div className="flex flex-col gap-4">
+              {Userdocsarr.map((doc) => (
+                <Link href={doc.url} key={doc.id}>
+                  <div className="bg-[#e4edfa] rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-64 flex flex-row">
+                    <Image src="/file.png" alt="icon" width={60} height={60} />
+                    {doc.name}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          {type === "CA" && (
+            <div className="flex flex-col gap-4">
+              {CAdocsarr.map((doc) => (
+                <Link href={doc.url} key={doc.id}>
+                  <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
+                    <Image src="/file.png" alt="icon" width={60} height={60} />
+                    {doc.name}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
-      
-
       </div>
     </div>
   );

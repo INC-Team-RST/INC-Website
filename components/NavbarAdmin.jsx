@@ -2,16 +2,16 @@ import React from "react";
 import { IoLogOut } from "react-icons/io5";
 import { useRouter } from "next/router";
 import Image from "next/image";
-function Navbar({photoURL, displayName, email}) {
+function NavbarAdmin({photoURL, displayName, email}) {
     const router = useRouter();
     const logout = () => {
         localStorage.clear();
         router.push("/");
       };
   return (
-      <nav className="bg-[#eaf3fa]">
+      <nav className="bg-[#c2e2fb]">
         <div className="w-full px-12 h-[5rem] align-middle flex flex-wrap items-center justify-between font-myfont mx-auto">
-          <a href="https://flowbite.com/" className="flex items-center">
+          <a href={"/"} className="flex items-center">
             <span className="self-center text-3xl font-extrabold text-[#2c458e] whitespace-nowrap dark:text-white">
               ClientHive
             </span>
@@ -39,14 +39,14 @@ function Navbar({photoURL, displayName, email}) {
             </svg>
           </button>
           <div className="hidden w-full md:block md:w-auto" id="navbar-default">
-            <ul className="font-medium flex justify-center items-center flex-col p-4 md:p-0 mt-4 border bg-[#eaf3fa] border-gray-100 rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:border-0">
+            <ul className="font-medium flex justify-center items-center flex-col p-4 md:p-0 mt-4 border  rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:border-0">
               <li>
                 <a
                   href="#"
                   className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
                   aria-current="page"
                 >
-                  Find Admin
+                  View Clients
                 </a>
               </li>
               <li>
@@ -65,12 +65,12 @@ function Navbar({photoURL, displayName, email}) {
                   Schedule an appointment
                 </a>
               </li>
-              <li className="flex rounded-md py-2 gap-3">
+              <li className="flex rounded-md py-2  font-myfont gap-1">
                 
-                <Image src={photoURL} referrerPolicy="no-referrer" className="rounded-md shadow-md" alt="" width={40} height={40} />
-                <p className="text-lg font-sans font-semibold ml-2">
+                <Image src={photoURL} referrerPolicy="no-referrer" className="rounded-full shadow-md" alt="" width={50} height={50} />
+                <p className="text-lg font-semibold ml-2">
                     {displayName}
-                    <span className="block text-xs font-serif font-normal">
+                    <span className="block text-xs font-medium">
                     {email}
                     </span>
                 </p>
@@ -89,4 +89,4 @@ function Navbar({photoURL, displayName, email}) {
   );
 }
 
-export default Navbar;
+export default NavbarAdmin;

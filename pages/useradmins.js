@@ -13,7 +13,22 @@ const Useradmins = () => {
   const [addAdmin, setAddAdmin] = useState(false);
   const [adminService, setAdminService] = useState("NOT_SELECTED");
   // const [accessToken, setAccessToken] = useState(userAccessToken); // declare accessToken state variable
-
+  const fetchAdminsData = async (accessToken) => {
+    try {
+      const response = await fetch(
+        "https://client-hive.onrender.com/api/user/admins",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setAdmins(data);
+    } catch (error) {
+      console.error("There was an error fetching the admins data:", error);
+    }
+  };
   useEffect(() => {
     var accessToken = userAccessToken();
     if (!accessToken) return router.push("/");
@@ -21,25 +36,8 @@ const Useradmins = () => {
     //console.log(userInfo);
     setUser(userInfo);
 
-    const fetchAdminsData = async () => {
-      try {
-        const response = await fetch(
-          "https://client-hive.onrender.com/api/user/admins",
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        const data = await response.json();
-        setAdmins(data);
-      } catch (error) {
-        console.error("There was an error fetching the admins data:", error);
-      }
-    };
-
-    fetchAdminsData();
-  }, []);
+    fetchAdminsData(accessToken);
+  }, [router]);
   const fetchAddAdminsData = async (profession) => {
     var accessToken1 = userAccessToken();
     console.log("in api function " + profession);
@@ -86,6 +84,8 @@ const Useradmins = () => {
       );
       const data = await response.json();
       console.log(data);
+      fetchAdminsData(accessToken2)
+      fetchAddAdminsData(admin.profession)
     } catch (error) {
       console.error("There was an error posting the admins data:", error);
     }
@@ -106,28 +106,22 @@ const Useradmins = () => {
   };
   return (
     <div className="bg-[#eaf3fa] w-screen h-screen flex flex-col text-center items-center font-myfont py-10 px-10">
-      <Image
-        src={user?.photoURL}
-        referrerPolicy="no-referrer"
-        className="rounded-md shadow-md"
-        alt=""
-        width={40}
-        height={40}
-      />
-      <p className="text-lg font-sans font-semibold ml-2">
-        {user?.displayName}
-        <span className="block text-xs font-serif font-normal">{user?.email}</span>
-      </p>
-      <IoLogOut
+    <IoLogOut
         fontSize={40}
-        className="cursor-pointer text-gray-600 mx-3"
+        className="right-4 top-4 absolute cursor-pointer text-gray-600 mx-3"
         onClick={logout}
       />
-      <p>Your admins for {user?.email} are:</p>
+      <div className="flex flex-row px-4 gap-2 m-6">
+      <Image className="rounded-full" alt="profile photo" src={user?.photoURL} width={55} height={55}/>
+        <div className="flex flex-col">
+            <div className="text-xl font-semibold"> {user?.displayName}</div>
+            <div className="text-base "> {user?.email}</div>
+        </div>
+      </div>
       <p className="text-[#30498f] font-bold text-4xl">
         Your Service Agent Admins
       </p>
-      <div className="grid grid-cols-4 flex-wrap justify-items-center justify-center items-center my-10 gap-10">
+      {admins!=[] && <div className="grid grid-cols-4 flex-wrap justify-items-center justify-center items-center my-10 gap-10">
         {admins.map((admin) => (
           <Link
             key={admin.id}
@@ -141,7 +135,7 @@ const Useradmins = () => {
             <p className="text-[#3b3b3c]  text-base">{admin.profession}</p>
           </Link>
         ))}
-      </div>
+      </div>}
       <button
         className="rounded-2xl text-[#30498f] font-bold text-2xl shadow-md w-fit justify-center shadow-slate-400 p-6"
         onClick={() => setAddAdmin(!addAdmin)}

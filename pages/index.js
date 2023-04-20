@@ -167,6 +167,7 @@ const Login = () => {
         .catch(error => {
           console.error('There was an error making the request:', error);
         });
+        router.push("/adminpage");
       }
       else{
         const requestOptions = {
@@ -192,9 +193,9 @@ const Login = () => {
           .catch(error => {
             console.error('There was an error making the request:', error);
           });
+          router.push("/adminclients");
       }
-  
-      router.push("/adminpage");
+      
   };
 
 
