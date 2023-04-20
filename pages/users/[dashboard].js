@@ -10,6 +10,9 @@ import "firebase/firestore";
 import { db } from "../../firebase-config";
 import Navbar from "../../components/Navbar";
 import AppointmentBooking from "../../components/Appointment";
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Progress } from 'reactstrap';
+
 import {
   getFirestore,
   collection,
@@ -29,27 +32,24 @@ import {
 } from "firebase/storage";
 import { setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-
 const Index = () => {
   const router = useRouter();
   const [file, setFile] = useState("");
   const [type, setType] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [user, setUser] = useState(null);
   const storage = getStorage();
   const [CAdocsarr, setCADocsarr] = useState([]);
   const [Userdocsarr, setUserDocsarr] = useState([]);
-  
-  //navbar states
-  const [appointment, setAppointment]= useState(false)
-  const [documents, setDocuments]= useState(false)
 
+  //navbar states
+  const [appointment, setAppointment] = useState(false);
+  const [documents, setDocuments] = useState(false);
 
   const auth = getAuth();
   console.log(router.query);
-  function handleChange(event) {
-    setFile(event.target.files[0]);
-  }
+
   const adminId = router.query.dashboard;
   const [admin, setAdmin] = useState(null);
   const [admins, setAdmins] = useState([]);
@@ -80,26 +80,6 @@ const Index = () => {
     fetchAdminsData();
   }, []);
 
-  // useEffect(() => {
-  //   const fetchAdminsData = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         "https://client-hive.onrender.com/api/user/admins",
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${accessToken}`,
-  //           },
-  //         }
-  //       );
-  //       const data = await response.json();
-  //       setAdmins(data);
-  //     } catch (error) {
-  //       console.error("There was an error fetching the admins data:", error);
-  //     }
-  //   };
-
-  //   fetchAdminsData();
-  // }, []);
   console.log(admins);
   useEffect(() => {
     if (adminId && admins.length > 0) {
@@ -114,7 +94,9 @@ const Index = () => {
     }
   }, [adminId, admins, router]);
   // console.log("admin "+ admin.id)
-
+  function handleChange(event) {
+    setFile(event.target.files[0]);
+  }
   const handleFileUpload = (event) => {
     const Filereference = ref(storage, `Documents/${file.name}`);
     const uploadTask = uploadBytesResumable(Filereference, file);
@@ -123,7 +105,8 @@ const Index = () => {
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
+        if (progress == 100) { alert("Upload is " + progress + "% done") };
+        setUploadProgress(progress); // update the progress state
         switch (snapshot.state) {
           case "paused":
             console.log("Upload is paused");
@@ -142,38 +125,72 @@ const Index = () => {
         // Handle successful uploads on complete
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          var accessToken3 = userAccessToken();
           console.log(downloadURL);
-          await addDoc(collection(db, path), {
-            name: file.name,
-            Type: "UserDocument",
-            url: downloadURL,
-            createdAt: Timestamp.now(),
-            
-          });
+          // try {
+          const response = await fetch(
+            "https://client-hive.onrender.com/api/user/document",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken3}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                version: "1",
+                name: file.name,
+                url: downloadURL,
+              }),
+            }
+          );
+          console.log("in try");
+          const data = await response.json();
+          console.log(data);
+          setAdmins(data);
+          // } catch (error) {
+          //   console.error(
+          //     "There was an error fetching the admins data:",
+          //     error
+          //   );
+          // }
         });
       }
     );
   };
+
   const returnDocs = async () => {
     try {
+      var accessToken2 = userAccessToken();
       var path = `Users/${auth.currentUser.uid}/Documents`;
       var arr = [];
       var arr_ca = [];
-      const querySnapshot = await getDocs(collection(db, path));
-      console.log("Rohan");
-      querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        //console.log(doc.id, " => ", doc.data()['url']);
-        if (doc.data()["Type"] == "UserDocument") {
-          arr.push(doc.data());
-        } else {
-          arr_ca.push(doc.data());
+      // const querySnapshot = await getDocs(collection(db, path));
+      // querySnapshot.forEach((doc) => {
+      //   // doc.data() is never undefined for query doc snapshots
+      //   //console.log(doc.id, " => ", doc.data()['url']);
+      //   if (doc.data()["Type"] == "UserDocument") {
+      //     arr.push(doc.data());
+      //   } else {
+      //     arr_ca.push(doc.data());
+      //   }
+      // });
+      const response = await fetch(
+        `https://client-hive.onrender.com/api/user/mydocument`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken2}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
+      const data = await response.json();
+      console.log(data);
+      setUserDocsarr(data);
     } catch (error) {
       console.log(error);
     }
-    setUserDocsarr(arr);
+
     setType("User");
     //setCADocsarr(arr_ca);
     //console.log(arr)
@@ -201,6 +218,31 @@ const Index = () => {
     setCADocsarr(arr_ca);
     setType("CA");
     //console.log(arr)
+  };
+  const handleShare = async (docId) => {
+    var accessToken3 = userAccessToken();
+    console.log(accessToken3);
+    console.log(docId);
+    try {
+      const response = await fetch(
+        `https://client-hive.onrender.com/api/user/document/${docId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${accessToken3}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            admin_id: parseInt(adminId),
+          }),
+        }
+      );
+      const data = await response.json();
+      alert("Document Shared Successfully with " + admin.display_name);
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
   const logout = async () => {
     const accessToken3 = userAccessToken();
@@ -273,7 +315,7 @@ const Index = () => {
               <li>
                 <a
                   href="#"
-                  onClick={()=>(setDocuments(!documents))}
+                  onClick={() => setDocuments(!documents)}
                   className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                 >
                   Submit and Get Documents
@@ -282,7 +324,7 @@ const Index = () => {
               <li>
                 <a
                   href="#"
-                  onClick={()=>(setAppointment(!appointment))}
+                  onClick={() => setAppointment(!appointment)}
                   className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                 >
                   Schedule an appointment
@@ -314,45 +356,52 @@ const Index = () => {
         </div>
       </nav>
       <div></div>
-      <div className="flex px-10 flex-row gap-4 ">
-        {documents==true && <div className="flex flex-col ">
-          <div>
-            <button
-              className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
-              onClick={returnDocs}
-            >
-              Get Documents uploaded by You
-            </button>
+      <div className="flex px-10 flex-row gap-4 items-center ">
+        {documents == true && (
+          <div className="flex flex-col align-middle">
+            <div>
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                onClick={returnDocs}
+              >
+                Get Documents uploaded by You
+              </button>
+            </div>
+            <div>
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                onClick={returnDocs_CA}
+              >
+                Get Documents uploaded by CA
+              </button>
+            </div>
+            <div className="flex flex-col">
+              <input type="file" onChange={handleChange} />
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl"
+                onClick={handleFileUpload}
+              >
+                Upload
+              </button>
+
+            </div>
           </div>
-          <div>
-            <button
-              className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
-              onClick={returnDocs_CA}
-            >
-              Get Documents uploaded by CA
-            </button>
-          </div>
-          <div className="flex flex-col">
-            <input type="file" onChange={handleChange} />
-            <button
-              className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl"
-              onClick={handleFileUpload}
-            >
-              Upload
-            </button>
-          </div>
-        </div>}
-        {appointment==true && <AppointmentBooking adminId={adminId}/>}
+        )}
+        {appointment == true && <AppointmentBooking adminId={adminId} />}
         <div className="flex ml-10 mt-4 flex-row">
           {type === "User" && (
             <div className="flex flex-col gap-4">
               {Userdocsarr.map((doc) => (
-                <Link href={doc.url} key={doc.id}>
-                  <div className="bg-[#e4edfa] rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-64 flex flex-row">
-                    <Image src="/file.png" alt="icon" width={60} height={60} />
-                    {doc.name}
-                  </div>
-                </Link>
+                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                  <Link href={doc.url} key={doc.id} className="relative">
+                    <div className="flex flex-row">
+                      <Image src="/file.png" alt="icon" width={60} height={60} />
+                      <div className="flex-wrap"> {doc.name}</div>
+                    </div>
+                  </Link>
+                  <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} />
+                </div>
+
               ))}
             </div>
           )}
@@ -363,6 +412,7 @@ const Index = () => {
                   <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
                     <Image src="/file.png" alt="icon" width={60} height={60} />
                     {doc.name}
+                    <Image src="/share.png" alt="icon" width={60} height={60} />
                   </div>
                 </Link>
               ))}
@@ -373,25 +423,5 @@ const Index = () => {
     </div>
   );
 };
-
-// export async function getServerSideProps(context) {
-//   const { adminId } = context.params
-//   const res = await fetch(`https://client-hive.onrender.com/api/user/admins`)
-//   const admins = await res.json()
-//   console.log(admins)
-//   // const admin = admins.find(admin => admin.id === adminId)
-
-//   // if (!admin) {
-//   //   return {
-//   //     notFound: true
-//   //   }
-//   // }
-
-//   return {
-//     props: {
-//       admins
-//     }
-//   }
-// }
 
 export default Index;
