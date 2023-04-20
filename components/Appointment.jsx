@@ -66,10 +66,11 @@ useEffect(() => {
     }
   };
   const getAppointments = async () => {
+    console.log("in get function"+ adminId.adminId);
     var accessToken2 = userAccessToken();
     try {
       const response = await fetch(
-        "https://client-hive.onrender.com/api/user/appointment",
+        `https://client-hive.onrender.com/api/user/appointment/${adminId.adminId}`,
         {
           method: "GET",
           headers: {
@@ -81,7 +82,7 @@ useEffect(() => {
       const data = await response.json();
       // console.log(data);
       setAppoints(data);
-      getAppointments();
+      // getAppointments();
     } catch (error) {
       console.error("There was an error posting the appointment", error);
     }
