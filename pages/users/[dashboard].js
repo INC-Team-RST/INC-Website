@@ -40,8 +40,9 @@ const Index = () => {
 
   const [user, setUser] = useState(null);
   const storage = getStorage();
-  const [CAdocsarr, setCADocsarr] = useState([]);
+  const [Admindocsarr, setAdminDocsarr] = useState([]);
   const [Userdocsarr, setUserDocsarr] = useState([]);
+  const [UserSharedocsarr, setUserShareDocsarr] = useState([]);
 
   //navbar states
   const [appointment, setAppointment] = useState(false);
@@ -146,7 +147,7 @@ const Index = () => {
           console.log("in try");
           const data = await response.json();
           console.log(data);
-          setAdmins(data);
+          // setAdmins(data);
           // } catch (error) {
           //   console.error(
           //     "There was an error fetching the admins data:",
@@ -195,30 +196,84 @@ const Index = () => {
     //setCADocsarr(arr_ca);
     //console.log(arr)
   };
-  const returnDocs_CA = async () => {
+  const returnSharedDocs = async () => {
     try {
+      var accessToken2 = userAccessToken();
       var path = `Users/${auth.currentUser.uid}/Documents`;
-      var arr = [];
-      var arr_ca = [];
-      const querySnapshot = await getDocs(collection(db, path));
-      console.log("Rohan");
-      querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        //console.log(doc.id, " => ", doc.data()['url']);
-        if (doc.data()["Type"] == "CADocument") {
-          arr_ca.push(doc.data());
-        } else {
-          arr.push(doc.data());
+
+      // const querySnapshot = await getDocs(collection(db, path));
+      // querySnapshot.forEach((doc) => {
+      //   // doc.data() is never undefined for query doc snapshots
+      //   //console.log(doc.id, " => ", doc.data()['url']);
+      //   if (doc.data()["Type"] == "UserDocument") {
+      //     arr.push(doc.data());
+      //   } else {
+      //     arr_ca.push(doc.data());
+      //   }
+      // });
+      const response = await fetch(
+        `https://client-hive.onrender.com/api/user/document/shared`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken2}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            admin_id : parseInt(adminId)
+          }),
         }
-      });
+      );
+      const data = await response.json();
+      console.log(data);
+      setUserShareDocsarr(data);
     } catch (error) {
       console.log(error);
     }
-    //setUserDocsarr(arr);
-    setCADocsarr(arr_ca);
-    setType("CA");
+
+    setType("UserShared");
+    //setCADocsarr(arr_ca);
     //console.log(arr)
   };
+  // const returnAdminDocs = async () => {
+  //   try {
+  //     var accessToken2 = userAccessToken();
+  //     var path = `Users/${auth.currentUser.uid}/Documents`;
+
+  //     // const querySnapshot = await getDocs(collection(db, path));
+  //     // querySnapshot.forEach((doc) => {
+  //     //   // doc.data() is never undefined for query doc snapshots
+  //     //   //console.log(doc.id, " => ", doc.data()['url']);
+  //     //   if (doc.data()["Type"] == "UserDocument") {
+  //     //     arr.push(doc.data());
+  //     //   } else {
+  //     //     arr_ca.push(doc.data());
+  //     //   }
+  //     // });
+  //     const response = await fetch(
+  //       `https://client-hive.onrender.com/api/admin/document/shared`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken2}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           admin_id : parseInt(adminId)
+  //         }),
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     console.log(data);
+  //     setAdminDocsarr(data);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+
+  //   setType("Admin");
+  //   //setCADocsarr(arr_ca);
+  //   //console.log(arr)
+  // };
   const handleShare = async (docId) => {
     var accessToken3 = userAccessToken();
     console.log(accessToken3);
@@ -370,11 +425,19 @@ const Index = () => {
             <div>
               <button
                 className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
-                onClick={returnDocs_CA}
+                onClick={returnSharedDocs}
               >
-                Get Documents uploaded by CA
+                Get Shared Documents 
               </button>
             </div>
+            {/* <div>
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                onClick={returnAdminDocs}
+              >
+                Get Documents from Admin 
+              </button>
+            </div> */}
             <div className="flex flex-col">
               <input type="file" onChange={handleChange} />
               <button
@@ -405,14 +468,30 @@ const Index = () => {
               ))}
             </div>
           )}
-          {type === "CA" && (
+          {type === "UserShared" && (
             <div className="flex flex-col gap-4">
-              {CAdocsarr.map((doc) => (
+              {UserSharedocsarr.map((doc) => (
+                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                  <Link href={doc.url} key={doc.id} className="relative">
+                    <div className="flex flex-row">
+                      <Image src="/file.png" alt="icon" width={60} height={60} />
+                      <div className="flex-wrap"> {doc.name}</div>
+                    </div>
+                  </Link>
+                  {/* <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} /> */}
+                </div>
+
+              ))}
+            </div>
+          )}
+          {type === "Admin" && (
+            <div className="flex flex-col gap-4">
+              {Admindocsarr.map((doc) => (
                 <Link href={doc.url} key={doc.id}>
                   <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
                     <Image src="/file.png" alt="icon" width={60} height={60} />
                     {doc.name}
-                    <Image src="/share.png" alt="icon" width={60} height={60} />
+                    {/* <Image src="/share.png" alt="icon" width={60} height={60} /> */}
                   </div>
                 </Link>
               ))}

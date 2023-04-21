@@ -3,10 +3,45 @@ import { userAccessToken, fetchUser } from "../../utils/fetchDetails";
 import { useRouter } from "next/router";
 import { IoLogOut } from "react-icons/io5";
 import Image from "next/image";
+import firebase from "firebase/app";
 import Link from "next/link";
+import { firebaseApp } from "../../firebase-config";
+import "firebase/firestore";
+import { db } from "../../firebase-config";
+import Navbar from "../../components/Navbar";
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Progress } from 'reactstrap';
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  doc,
+  getDoc,
+  Timestamp,
+  getDocs,
+} from "firebase/firestore";
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { setDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import AppointmentBooking from "../../components/AdminAppoinment";
 function Dashboard() {
+  const storage = getStorage();
   const router = useRouter();
+  const auth = getAuth();
+
+  const [file, setFile] = useState("");
+  const [type, setType] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  
+
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState(null);
   const [admin, setAdmin] = useState(null);
@@ -16,6 +51,12 @@ function Dashboard() {
   //navbar states
   const [appointment, setAppointment] = useState(true);
   const [documents, setDocuments] = useState(false);
+
+  //docs array states
+  const [Admindocsarr, setAdminDocsarr] = useState([]);
+  const [AdminSharedocsarr, setAdminShareDocsarr] = useState([]);
+  const [Userdocsarr, setUserDocsarr] = useState([]);
+
 
   useEffect(() => {
     const accessToken = userAccessToken();
@@ -57,6 +98,209 @@ function Dashboard() {
     }
   }, [userId, users, router]);
 
+  function handleChange(event) {
+    setFile(event.target.files[0]);
+  }
+  const handleFileUpload = (event) => {
+    const Filereference = ref(storage, `Documents/${file.name}`);
+    const uploadTask = uploadBytesResumable(Filereference, file);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (progress == 100) { alert("Upload is " + progress + "% done") };
+        setUploadProgress(progress); // update the progress state
+        switch (snapshot.state) {
+          case "paused":
+            console.log("Upload is paused");
+            break;
+          case "running":
+            console.log("Upload is running");
+            break;
+        }
+      },
+      (error) => {
+        console.log(error);
+      },
+      () => {
+        var path = `Users/${auth.currentUser.uid}/Documents`;
+        console.log(path);
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          var accessToken3 = userAccessToken();
+          console.log(downloadURL);
+          // try {
+          const response = await fetch(
+            "https://client-hive.onrender.com/api/admin/document",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken3}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                version: "1",
+                name: file.name,
+                url: downloadURL,
+              }),
+            }
+          );
+          console.log("in try");
+          const data = await response.json();
+          console.log(data);
+          // } catch (error) {
+          //   console.error(
+          //     "There was an error fetching the admins data:",
+          //     error
+          //   );
+          // }
+        });
+      }
+    );
+  };
+
+  const returnDocs = async () => {
+    try {
+      var accessToken2 = userAccessToken();
+      var path = `Users/${auth.currentUser.uid}/Documents`;
+      var arr = [];
+      var arr_ca = [];
+      // const querySnapshot = await getDocs(collection(db, path));
+      // querySnapshot.forEach((doc) => {
+      //   // doc.data() is never undefined for query doc snapshots
+      //   //console.log(doc.id, " => ", doc.data()['url']);
+      //   if (doc.data()["Type"] == "UserDocument") {
+      //     arr.push(doc.data());
+      //   } else {
+      //     arr_ca.push(doc.data());
+      //   }
+      // });
+      const response = await fetch(
+        `https://client-hive.onrender.com/api/admin/mydocument`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken2}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      setAdminDocsarr(data);
+    } catch (error) {
+      console.log(error);
+    }
+
+    setType("Admin");
+    //setCADocsarr(arr_ca);
+    //console.log(arr)
+  };
+  const returnSharedDocs = async () => {
+    try {
+      var accessToken2 = userAccessToken();
+      var path = `Users/${auth.currentUser.uid}/Documents`;
+
+      // const querySnapshot = await getDocs(collection(db, path));
+      // querySnapshot.forEach((doc) => {
+      //   // doc.data() is never undefined for query doc snapshots
+      //   //console.log(doc.id, " => ", doc.data()['url']);
+      //   if (doc.data()["Type"] == "UserDocument") {
+      //     arr.push(doc.data());
+      //   } else {
+      //     arr_ca.push(doc.data());
+      //   }
+      // });
+      const response = await fetch(
+        `https://client-hive.onrender.com/api/admin/document/shared`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken2}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id : parseInt(userId)
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      setAdminShareDocsarr(data);
+    } catch (error) {
+      console.log(error);
+    }
+
+    setType("AdminShared");
+    //setCADocsarr(arr_ca);
+    //console.log(arr)
+  };
+  // const returnUserDocs = async () => {
+  //   try {
+  //     var accessToken2 = userAccessToken();
+  //     var path = `Users/${auth.currentUser.uid}/Documents`;
+
+  //     // const querySnapshot = await getDocs(collection(db, path));
+  //     // querySnapshot.forEach((doc) => {
+  //     //   // doc.data() is never undefined for query doc snapshots
+  //     //   //console.log(doc.id, " => ", doc.data()['url']);
+  //     //   if (doc.data()["Type"] == "UserDocument") {
+  //     //     arr.push(doc.data());
+  //     //   } else {
+  //     //     arr_ca.push(doc.data());
+  //     //   }
+  //     // });
+  //     const response = await fetch(
+  //       `https://client-hive.onrender.com/api/user/document/shared`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken2}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           user_id : parseInt(userId)
+  //         }),
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     console.log(data);
+  //     setUserDocsarr(data);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+
+  //   setType("User");
+  //   //setCADocsarr(arr_ca);
+  //   //console.log(arr)
+  // };
+  const handleShare = async (docId) => {
+    var accessToken3 = userAccessToken();
+    console.log(accessToken3);
+    console.log(docId);
+    try {
+      const response = await fetch(
+        `https://client-hive.onrender.com/api/admin/document/${docId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${accessToken3}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: parseInt(userId),
+          }),
+        }
+      );
+      const data = await response.json();
+      alert("Document Shared Successfully with " + user.display_name);
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const logout = async () => {
     const accessToken3 = userAccessToken();
     console.log(accessToken3);
@@ -171,6 +415,93 @@ function Dashboard() {
       <div className="flex flex-col w-full h-full">
       <div> Dashboard panel for Client : {user?.email}</div>
         {appointment==true && <AppointmentBooking userId={userId}/>}
+        <div className="flex px-10 flex-row gap-4 items-center ">
+        {documents == true && (
+          <div className="flex flex-col align-middle">
+            <div>
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                onClick={returnDocs}
+              >
+                Get Documents uploaded by You
+              </button>
+            </div>
+            <div>
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                onClick={returnSharedDocs}
+              >
+                Get Shared Documents 
+              </button>
+            </div>
+            {/* <div>
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                onClick={returnUserDocs}
+              >
+                Get User Documents 
+              </button>
+            </div> */}
+            <div className="flex flex-col">
+              <input type="file" onChange={handleChange} />
+              <button
+                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl"
+                onClick={handleFileUpload}
+              >
+                Upload
+              </button>
+
+            </div>
+          </div>
+        )}
+        <div className="flex ml-10 mt-4 flex-row">
+          {type === "Admin" && (
+            <div className="flex flex-col gap-4">
+              {Admindocsarr.map((doc) => (
+                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                  <Link href={doc.url} key={doc.id} className="relative">
+                    <div className="flex flex-row">
+                      <Image src="/file.png" alt="icon" width={60} height={60} />
+                      <div className="flex-wrap"> {doc.name}</div>
+                    </div>
+                  </Link>
+                  <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} />
+                </div>
+
+              ))}
+            </div>
+          )}
+          {type === "AdminShared" && (
+            <div className="flex flex-col gap-4">
+              {AdminSharedocsarr.map((doc) => (
+                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                  <Link href={doc.url} key={doc.id} className="relative">
+                    <div className="flex flex-row">
+                      <Image src="/file.png" alt="icon" width={60} height={60} />
+                      <div className="flex-wrap"> {doc.name}</div>
+                    </div>
+                  </Link>
+                  {/* <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} /> */}
+                </div>
+
+              ))}
+            </div>
+          )}
+          {type === "User" && (
+            <div className="flex flex-col gap-4">
+              {Userdocsarr.map((doc) => (
+                <Link href={doc.url} key={doc.id}>
+                  <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
+                    <Image src="/file.png" alt="icon" width={60} height={60} />
+                    {doc.name}
+                    {/* <Image src="/share.png" alt="icon" width={60} height={60} /> */}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+        </div>
       </div>
     </div>
   );
