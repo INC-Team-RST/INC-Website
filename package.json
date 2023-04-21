@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@100mslive/react-sdk": "^0.8.1",
     "@next/font": "13.2.1",
     "eslint": "8.34.0",
     "eslint-config-next": "13.2.1",
