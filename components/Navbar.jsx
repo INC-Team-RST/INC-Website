@@ -8,6 +8,7 @@ function Navbar({photoURL, displayName, email}) {
         localStorage.clear();
         router.push("/login");
       };
+      
   return (
       <nav className="bg-[#eaf3fa]">
         <div className="w-full px-12 flex flex-wrap items-center justify-between mx-auto p-4">
