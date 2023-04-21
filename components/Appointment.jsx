@@ -3,12 +3,14 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import React, { useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import { userAccessToken, fetchUser } from "../utils/fetchDetails";
 function AppointmentBooking(adminId) {
 
   const [appoints, setAppoints] = useState([]);
+  
+  const router = useRouter();
 
- 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -28,8 +30,8 @@ function AppointmentBooking(adminId) {
     setEndTime(event.target.value);
   };
 
-//useEffect that calls the getAppointments function on page load
-useEffect(() => {
+  //useEffect that calls the getAppointments function on page load
+  useEffect(() => {
     getAppointments();
   }, []);
 
@@ -68,7 +70,7 @@ useEffect(() => {
   //   }
   // };
   const getAppointments = async () => {
-    console.log("in get function"+ adminId.adminId);
+    console.log("in get function" + adminId.adminId);
     var accessToken2 = userAccessToken();
     try {
       const response = await fetch(
@@ -143,7 +145,7 @@ useEffect(() => {
     setStartTime('');
     setEndTime('');
   };
-  
+
   return (
     <div className="w-full font-myfont flex flex-row justify-center p-10 gap-60">
       <div>
@@ -179,43 +181,50 @@ useEffect(() => {
         <div className="table w-full p-2 gap-2">
           <thead>
             <tr>
-              <th className="p-4 w-1/4">Date</th>
-              <th className="p-4 w-1/4">From</th>
-              <th className="p-4 w-1/4">To</th>
-              <th className="p-4 w-1/4">Status</th>
-              
+              <th className="p-4 w-1/5">Date</th>
+              <th className="p-4 w-1/5">From</th>
+              <th className="p-4 w-1/5">To</th>
+              <th className="p-4 w-1/5">Status</th>
+              <th className="p-4 w-1/5">Video</th>
+
             </tr>
           </thead>
           <tbody>
             {Array.isArray(appoints) &&
-              appoints.map((e, index) => (
-                <tr key={index} className="border-2 border-[#eaf3fa] bg-[#eaf3fa] rounded-xl py-3  m-2">
-                  <td className="p-4 whitespace-nowrap w-1/4">
-                    {new Date(e.date).toDateString()}
-                  </td>
-                  <td className="p-4 whitespace-nowrap w-1/4">
-                    {
-                      new Date(new Date(e.startTime)).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
-                    }
-                  </td>
-                  <td className="p-4 whitespace-nowrap w-1/4">
-                    {new Date(new Date(e.endTime)).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}
-                  </td>
-                  <td className="p-4 whitespace-nowrap w-1/4">
-                    <span className={`${e.status == "PENDING" ? "text-yellow-600" : e.status == "ACCEPTED" ? "text-green-600" : "text-red-600"} font-semibold`}>
-                      {e.status}
-                    </span>
-                  </td>
-                  {/* <td className="p-2 w-1/4 ">
-                    <button onClick={() => { handleApprove(index) }} className="px-1 hover:scale-125 transform duration-300">
-                      <Image className="font-bold" alt="approve" src="/approve.png" height={25} width={25} />
-                    </button>
-                    <button onClick={() => { handleReject(index) }} className="px-1 hover:scale-125 transform duration-300">
-                      <Image alt="reject" src="/remove.png" height={25} width={26} />
-                    </button>
-                  </td> */}
-                </tr>
-              ))}
+              appoints.map((e, index) => {
+                const startTime = new Date(e.startTime).getTime();
+                const endTime = new Date(e.endTime).getTime();
+                const currentTime = Date.now();
+                const isTimeInRange = currentTime >= startTime && currentTime <= endTime;
+
+                return (
+                  <tr key={index} className="border-2 border-[#eaf3fa] bg-[#eaf3fa] rounded-xl py-3  m-2">
+                    <td className="p-4 whitespace-nowrap w-1/5">
+                      {new Date(e.date).toDateString()}
+                    </td>
+                    <td className="p-4 whitespace-nowrap w-1/5">
+                      {new Date(startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}
+                    </td>
+                    <td className="p-4 whitespace-nowrap w-1/5">
+                      {new Date(endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}
+                    </td>
+                    <td className="p-4 whitespace-nowrap w-1/5">
+                      <span className={`${e.status == "PENDING" ? "text-yellow-600" : e.status == "ACCEPTED" ? "text-green-600" : "text-red-600"} font-semibold`}>
+                        {e.status}
+                      </span>
+                    </td>
+                    <td className="p-4 w-1/5">
+                      {isTimeInRange && e.status === "ACCEPTED" &&
+                        <button onClick={()=>(router.push("/video"))}>
+                          <Image alt="video" className="" src="/video.png" width={22} height={22} />
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                );
+              })
+            }
+
           </tbody>
         </div>
         {/* <div className="flex flex-col m-4 items-start">

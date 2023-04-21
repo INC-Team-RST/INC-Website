@@ -3,6 +3,7 @@ import Calendar from "react-calendar";
 import Image from "next/image";
 import "react-calendar/dist/Calendar.css";
 import React, { useEffect } from "react";
+import { useRouter } from "next/router";
 import { userAccessToken, fetchUser } from "../utils/fetchDetails";
 function AppointmentBooking(userId) {
   const [appoints, setAppoints] = useState([]);
@@ -11,6 +12,7 @@ function AppointmentBooking(userId) {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
+  const router = useRouter();
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -220,34 +222,41 @@ function AppointmentBooking(userId) {
         <div className="table w-full p-2 gap-2">
           <thead>
             <tr>
-              <th className="p-4 w-1/5">Date</th>
-              <th className="p-4 w-1/5">From</th>
-              <th className="p-4 w-1/5">To</th>
-              <th className="p-4 w-1/5">Status</th>
-              <th className="p-4 w-1/5">Action</th>
+              <th className="p-4 w-1/6">Date</th>
+              <th className="p-4 w-1/6">From</th>
+              <th className="p-4 w-1/6">To</th>
+              <th className="p-4 w-1/6">Status</th>
+              <th className="p-4 w-1/6">Action</th>
+              <th className="p-4 w-1/6">Video</th>
             </tr>
           </thead>
           <tbody>
             {Array.isArray(appoints) &&
-              appoints.map((e, index) => (
+              appoints.map((e, index) => {
+                const startTime = new Date(e.startTime).getTime();
+                const endTime = new Date(e.endTime).getTime();
+                const currentTime = Date.now();
+                const isTimeInRange = currentTime >= startTime && currentTime <= endTime;
+
+                return (
                 <tr key={index} className="border-2 border-[#eaf3fa] bg-[#eaf3fa] rounded-xl py-3  m-2">
-                  <td className="p-4 whitespace-nowrap w-1/5">
+                  <td className="p-4 whitespace-nowrap w-1/6">
                     {new Date(e.date).toDateString()}
                   </td>
-                  <td className="p-4 whitespace-nowrap w-1/5">
+                  <td className="p-4 whitespace-nowrap w-1/6">
                     {
                       new Date(new Date(e.startTime)).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
                     }
                   </td>
-                  <td className="p-4 whitespace-nowrap w-1/5">
+                  <td className="p-4 whitespace-nowrap w-1/6">
                     {new Date(new Date(e.endTime)).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}
                   </td>
-                  <td className="p-4 whitespace-nowrap w-1/5">
+                  <td className="p-4 whitespace-nowrap w-1/6">
                     <span className={`${e.status == "PENDING" ? "text-yellow-600" : e.status == "ACCEPTED" ? "text-green-600" : "text-red-600"} font-semibold`}>
                       {e.status}
                     </span>
                   </td>
-                  <td className="p-2 w-1/5 ">
+                  <td className="p-2 w-1/6 ">
                     <button onClick={() => { handleApprove(index) }} className="px-1 hover:scale-125 transform duration-300">
                       <Image className="font-bold" alt="approve" src="/approve.png" height={25} width={25} />
                     </button>
@@ -255,8 +264,17 @@ function AppointmentBooking(userId) {
                       <Image alt="reject" src="/remove.png" height={25} width={26} />
                     </button>
                   </td>
+                  <td className="p-4 w-1/6">
+                      {isTimeInRange && e.status === "ACCEPTED" &&
+                        <button onClick={()=>(router.push("/video"))}>
+                          <Image alt="video" className="" src="/video.png" width={22} height={22} />
+                        </button>
+                      }
+                    </td>
                 </tr>
-              ))}
+                );
+              })
+            }
           </tbody>
         </div>
       </div>
