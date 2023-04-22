@@ -31,40 +31,6 @@ function AppointmentBooking(userId) {
     getAppointments();
   }, []);
 
-  // const postAppointment = async (date, finalStartTime, finalEndTime) => {
-  //   var accessToken2 = userAccessToken();
-  //   const initialDate = new Date(date);
-  //   const date1 = new Date(finalStartTime);
-  //   const date2 = new Date(finalEndTime);
-  //   console.log("in post function");
-  //   console.log(accessToken2);
-  //   // console.log(initialDate)
-  //   // console.log(date1)
-  //   console.log(date2)
-  //   console.log(typeof parseInt(adminId.adminId));
-  //   try {
-  //     const response = await fetch(
-  //       "https://client-hive.onrender.com/api/user/appointment",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken2}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           admin_id: parseInt(adminId.adminId),
-  //           date: initialDate,
-  //           startTime: date1,
-  //           endTime: date2,
-  //         }),
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     console.log(data);
-  //   } catch (error) {
-  //     console.error("There was an error posting the appointment", error);
-  //   }
-  // };
   const getAppointments = async () => {
     var accessToken2 = userAccessToken();
     console.log("in get function" + userId.userId);
@@ -188,37 +154,43 @@ function AppointmentBooking(userId) {
 
 
   return (
-    <div className="w-full font-myfont h-fit flex flex-row justify-center p-10 gap-60">
+    <div className="w-full font-myfont h-fit flex flex-row justify-center p-10 gap-40">
       <div>
-        <h1>Appointment Booking</h1>
-        <div>
-          <Calendar onChange={handleDateChange} value={selectedDate} />
+      <div className="text-xl font-semibold text-center mb-6">
+          {" "}
+          Book a Client Appointment{" "}
         </div>
-        <div className="flex-col w-full justify-center items-center">
-          <form className="flex flex-col w-full justify-center items-center" onSubmit={handleAppointmentSubmit}>
-            <label htmlFor="start_time">Start Time (UTC)</label>
+        <div>
+          <Calendar  onChange={handleDateChange} value={selectedDate} />
+        </div>
+        <div className="flex-col w-full justify-center items-center mt-4">
+          <form className="flex flex-col gap-4 w-full justify-center items-center" onSubmit={handleAppointmentSubmit}>
+          <div className="flex-row gap-3">
+          <label htmlFor="start_time" className="font-normal text-gray-800">Start Time</label>
             <input
               id="start_time"
               type="time"
               value={startTime}
               onChange={handleStartTimeChange}
             />
-            <label htmlFor="end_time">End Time (UTC)</label>
+            <label htmlFor="end_time" className="font-normal text-gray-800 m-1" >End Time</label>
             <input
               id="end_time"
               type="time"
               value={endTime}
               onChange={handleEndTimeChange}
             />
-            <button type="submit">Book Appointment</button>
+          </div>
+            
+            <button className="rounded-full p-2 px-3 bg-[#fa9746] font-normal text-gray-800" type="submit">Book Appointment</button>
           </form>
         </div>
       </div>
       <div className="flex flex-col text-center">
-        <div className="text-xl font-semibold text-center">
+        <button onClick={()=>{getAppointments}} className="text-xl font-semibold text-center">
           {" "}
           Your Appointments{" "}
-        </div>
+        </button>
         <div className="table w-full p-2 gap-2">
           <thead>
             <tr>

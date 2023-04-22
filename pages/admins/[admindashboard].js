@@ -9,8 +9,10 @@ import { firebaseApp } from "../../firebase-config";
 import "firebase/firestore";
 import { db } from "../../firebase-config";
 import Navbar from "../../components/Navbar";
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+// import 'bootstrap/dist/css/bootstrap.min.css';
 import { Progress } from 'reactstrap';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 
 import {
   getFirestore,
@@ -40,7 +42,6 @@ function Dashboard() {
   const [file, setFile] = useState("");
   const [type, setType] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  
 
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState(null);
@@ -56,6 +57,10 @@ function Dashboard() {
   const [Admindocsarr, setAdminDocsarr] = useState([]);
   const [AdminSharedocsarr, setAdminShareDocsarr] = useState([]);
   const [Userdocsarr, setUserDocsarr] = useState([]);
+
+  //button states
+  const [show, setShow] = useState(false);
+  const [show2, setShow2] = useState(false);
 
 
   useEffect(() => {
@@ -160,23 +165,13 @@ function Dashboard() {
       }
     );
   };
-
   const returnDocs = async () => {
     try {
       var accessToken2 = userAccessToken();
       var path = `Users/${auth.currentUser.uid}/Documents`;
       var arr = [];
       var arr_ca = [];
-      // const querySnapshot = await getDocs(collection(db, path));
-      // querySnapshot.forEach((doc) => {
-      //   // doc.data() is never undefined for query doc snapshots
-      //   //console.log(doc.id, " => ", doc.data()['url']);
-      //   if (doc.data()["Type"] == "UserDocument") {
-      //     arr.push(doc.data());
-      //   } else {
-      //     arr_ca.push(doc.data());
-      //   }
-      // });
+
       const response = await fetch(
         `https://client-hive.onrender.com/api/admin/mydocument`,
         {
@@ -190,6 +185,8 @@ function Dashboard() {
       const data = await response.json();
       console.log(data);
       setAdminDocsarr(data);
+      setShow(true);
+      setShow2(false);
     } catch (error) {
       console.log(error);
     }
@@ -202,17 +199,6 @@ function Dashboard() {
     try {
       var accessToken2 = userAccessToken();
       var path = `Users/${auth.currentUser.uid}/Documents`;
-
-      // const querySnapshot = await getDocs(collection(db, path));
-      // querySnapshot.forEach((doc) => {
-      //   // doc.data() is never undefined for query doc snapshots
-      //   //console.log(doc.id, " => ", doc.data()['url']);
-      //   if (doc.data()["Type"] == "UserDocument") {
-      //     arr.push(doc.data());
-      //   } else {
-      //     arr_ca.push(doc.data());
-      //   }
-      // });
       const response = await fetch(
         `https://client-hive.onrender.com/api/admin/document/shared`,
         {
@@ -222,12 +208,14 @@ function Dashboard() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            user_id : parseInt(userId)
+            user_id: parseInt(userId)
           }),
         }
       );
       const data = await response.json();
       console.log(data);
+      setShow(false);
+      setShow2(true);
       setAdminShareDocsarr(data);
     } catch (error) {
       console.log(error);
@@ -237,45 +225,7 @@ function Dashboard() {
     //setCADocsarr(arr_ca);
     //console.log(arr)
   };
-  // const returnUserDocs = async () => {
-  //   try {
-  //     var accessToken2 = userAccessToken();
-  //     var path = `Users/${auth.currentUser.uid}/Documents`;
 
-  //     // const querySnapshot = await getDocs(collection(db, path));
-  //     // querySnapshot.forEach((doc) => {
-  //     //   // doc.data() is never undefined for query doc snapshots
-  //     //   //console.log(doc.id, " => ", doc.data()['url']);
-  //     //   if (doc.data()["Type"] == "UserDocument") {
-  //     //     arr.push(doc.data());
-  //     //   } else {
-  //     //     arr_ca.push(doc.data());
-  //     //   }
-  //     // });
-  //     const response = await fetch(
-  //       `https://client-hive.onrender.com/api/user/document/shared`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken2}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           user_id : parseInt(userId)
-  //         }),
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     console.log(data);
-  //     setUserDocsarr(data);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-
-  //   setType("User");
-  //   //setCADocsarr(arr_ca);
-  //   //console.log(arr)
-  // };
   const handleShare = async (docId) => {
     var accessToken3 = userAccessToken();
     console.log(accessToken3);
@@ -328,12 +278,12 @@ function Dashboard() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col bg-[#eaf3fa] bg-fixed bg-center font-myfont bg-no-repeat bg-[url('/accounting.png')]">
+    <div className={`w-full ${documents == true ? "h-screen" : "h-full"} flex flex-col bg-[#eaf3fa] bg-center font-myfont bg-no-repeat bg-[url('/opacity.png')]`}>
       <nav className="bg-[#c2e2fb]">
         <div className="w-full px-12 h-[5rem] align-middle flex flex-wrap items-center justify-between font-myfont mx-auto">
           <a href={"/"} className="flex items-center">
             <span className="self-center text-3xl font-extrabold text-[#2c458e] whitespace-nowrap dark:text-white">
-              Client Hive
+              Client<span className="">Hive</span>
             </span>
           </a>
           <button
@@ -363,28 +313,27 @@ function Dashboard() {
               <li>
                 <a
                   href="#"
-                  className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
-                  aria-current="page"
+                  onClick={() => {
+                    setShow(true)
+                    returnDocs();
+                    setDocuments(true)
+                    setAppointment(false)
+                  }}
+                  className={`block py-2 pl-3 pr-4  rounded ${documents == true ? "text-blue-700" : "text-gray-900"} hover:text-blue-700 `}
                 >
-                  Chat
+                  Share & Get Client Documents
                 </a>
               </li>
               <li>
                 <a
                   href="#"
-                  onClick={() => setDocuments(!documents)}
+                  onClick={() => {
+                    setAppointment(true)
+                    setDocuments(false)
+                  }}
                   className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                 >
-                  Documents
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  onClick={() => setAppointment(!appointment)}
-                  className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Appointment
+                  Schedule Appointments
                 </a>
               </li>
               <li className="flex rounded-md py-2  font-myfont gap-1">
@@ -412,95 +361,102 @@ function Dashboard() {
           </div>
         </div>
       </nav>
-      <div className="flex flex-col w-full h-full">
-      <div> Dashboard panel for Client : {user?.email}</div>
-        {appointment==true && <AppointmentBooking userId={userId}/>}
-        <div className="flex px-10 flex-row gap-4 items-center ">
-        {documents == true && (
-          <div className="flex flex-col align-middle">
-            <div>
+      <div className="flex flex-col items-center w-full h-full">
+        <div className="mt-3">
+          <div className="text-center text-[#fa9746] text-xl font-bold">Dashboard panel for Client : </div>
+          <div className="align-center text-center text-[#3d4868] font-medium"> {user?.display_name} - {user?.email}</div>
+        </div>
+
+        {appointment == true && <AppointmentBooking userId={userId} />}
+        <div className="flex px-10 flex-row gap-4 w-full  justify-center items-center align-middle">
+          <div className="flex w-1/3 align-middle mt-3">
+          {documents == true && (
+            <div className="flex flex-col align-middle">
+              <div>
+                <button
+                  className={`${show==true?"bg-[#afc3ff]":"bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
+                  onClick={returnDocs}
+                >
+                  Your Documents
+                </button>
+              </div>
+              <div>
+                <button
+                  className={`${show2==true?"bg-[#afc3ff]":"bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
+                  onClick={returnSharedDocs}
+                >
+                  Get Shared Documents
+                </button>
+              </div>
+              {/* <div>
               <button
-                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
-                onClick={returnDocs}
-              >
-                Get Documents uploaded by You
-              </button>
-            </div>
-            <div>
-              <button
-                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
-                onClick={returnSharedDocs}
-              >
-                Get Shared Documents 
-              </button>
-            </div>
-            {/* <div>
-              <button
-                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                className="bg-[#f69440] w-[18rem] font-myfont font-normal h-18 align-center my-4 rounded-2xl"
                 onClick={returnUserDocs}
               >
                 Get User Documents 
               </button>
-            </div> */}
-            <div className="flex flex-col">
-              <input type="file" onChange={handleChange} />
-              <button
-                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl"
-                onClick={handleFileUpload}
-              >
-                Upload
-              </button>
+              </div> */}
+              <div className="flex flex-col">
+                <input type="file" onChange={handleChange} />
+                <button
+                  className="bg-[#f69440] w-[18rem] font-myfont text-[1.2rem] font-medium hover:bg-[#afc3ff] h-10 align-center my-4 rounded-2xl"
+                  onClick={handleFileUpload}
+                >
+                  Upload
+                </button>
 
+              </div>
             </div>
+          )}
           </div>
-        )}
-        <div className="flex ml-10 mt-4 flex-row">
-          {type === "Admin" && (
-            <div className="flex flex-col gap-4">
-              {Admindocsarr.map((doc) => (
-                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
-                  <Link href={doc.url} key={doc.id} className="relative">
-                    <div className="flex flex-row">
-                      <Image src="/file.png" alt="icon" width={60} height={60} />
-                      <div className="flex-wrap"> {doc.name}</div>
-                    </div>
-                  </Link>
-                  <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} />
-                </div>
-
-              ))}
-            </div>
-          )}
-          {type === "AdminShared" && (
-            <div className="flex flex-col gap-4">
-              {AdminSharedocsarr.map((doc) => (
-                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
-                  <Link href={doc.url} key={doc.id} className="relative">
-                    <div className="flex flex-row">
-                      <Image src="/file.png" alt="icon" width={60} height={60} />
-                      <div className="flex-wrap"> {doc.name}</div>
-                    </div>
-                  </Link>
-                  {/* <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} /> */}
-                </div>
-
-              ))}
-            </div>
-          )}
-          {type === "User" && (
-            <div className="flex flex-col gap-4">
-              {Userdocsarr.map((doc) => (
-                <Link href={doc.url} key={doc.id}>
-                  <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
-                    <Image src="/file.png" alt="icon" width={60} height={60} />
-                    {doc.name}
-                    {/* <Image src="/share.png" alt="icon" width={60} height={60} /> */}
+          
+          <div className="flex ml-10 mt-4 w-2/3">
+            {type === "Admin" && (
+              <div className="flex flex-col gap-4">
+                {Admindocsarr.map((doc) => (
+                  <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                    <Link href={doc.url} key={doc.id} className="relative">
+                      <div className="flex flex-row">
+                        <Image src="/file.png" alt="icon" width={60} height={60} />
+                        <div className="flex-wrap"> {doc.name}</div>
+                      </div>
+                    </Link>
+                    <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} />
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+
+                ))}
+              </div>
+            )}
+            {type === "AdminShared" && (
+              <div className="flex flex-col gap-4">
+                {AdminSharedocsarr.map((doc) => (
+                  <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                    <Link href={doc.url} key={doc.id} className="relative">
+                      <div className="flex flex-row">
+                        <Image src="/file.png" alt="icon" width={60} height={60} />
+                        <div className="flex-wrap"> {doc.name}</div>
+                      </div>
+                    </Link>
+                    {/* <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} /> */}
+                  </div>
+
+                ))}
+              </div>
+            )}
+            {type === "User" && (
+              <div className="flex flex-col gap-4">
+                {Userdocsarr.map((doc) => (
+                  <Link href={doc.url} key={doc.id}>
+                    <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
+                      <Image src="/file.png" alt="icon" width={60} height={60} />
+                      {doc.name}
+                      {/* <Image src="/share.png" alt="icon" width={60} height={60} /> */}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

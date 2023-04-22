@@ -45,11 +45,14 @@ const Index = () => {
   const [UserSharedocsarr, setUserShareDocsarr] = useState([]);
 
   //navbar states
-  const [appointment, setAppointment] = useState(false);
+  const [appointment, setAppointment] = useState(true);
   const [documents, setDocuments] = useState(false);
 
   const auth = getAuth();
   console.log(router.query);
+ //button states
+ const [show, setShow] = useState(false);
+ const [show2, setShow2] = useState(false);
 
   const adminId = router.query.dashboard;
   const [admin, setAdmin] = useState(null);
@@ -188,6 +191,8 @@ const Index = () => {
       const data = await response.json();
       console.log(data);
       setUserDocsarr(data);
+      setShow(true);
+      setShow2(false);
     } catch (error) {
       console.log(error);
     }
@@ -220,12 +225,14 @@ const Index = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            admin_id : parseInt(adminId)
+            admin_id: parseInt(adminId)
           }),
         }
       );
       const data = await response.json();
       console.log(data);
+      setShow(false);
+      setShow2(true);
       setUserShareDocsarr(data);
     } catch (error) {
       console.log(error);
@@ -326,12 +333,12 @@ const Index = () => {
   };
   // bg-[url('/accounting.png')]
   return (
-    <div className="w-screen h-screen flex flex-col bg-fixed bg-center bg-no-repeat ">
-      <nav className="bg-[#eaf3fa]">
+    <div className={`w-full ${documents == true ? "h-screen" : "h-full"} flex flex-col  bg-[#eaf3fa] bg-center font-myfont bg-no-repeat bg-[url('/opacity.png')]`}>
+      <nav className="bg-[#c2e2fb]">
         <div className="w-full px-12 h-[5rem] align-middle flex flex-wrap items-center justify-between font-myfont mx-auto">
-          <a href="https://flowbite.com/" className="flex items-center">
+        <a href={"/"} className="flex items-center">
             <span className="self-center text-3xl font-extrabold text-[#2c458e] whitespace-nowrap dark:text-white">
-              ClientHive
+              Client<span className="">Hive</span>
             </span>
           </a>
           <button
@@ -357,35 +364,35 @@ const Index = () => {
             </svg>
           </button>
           <div className="hidden w-full md:block md:w-auto" id="navbar-default">
-            <ul className="font-medium flex justify-center items-center flex-col p-4 md:p-0 mt-4 border bg-[#eaf3fa] border-gray-100 rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:border-0">
+          <ul className="font-medium flex justify-center items-center flex-col p-4 md:p-0 mt-4 border  rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:border-0">
               <li>
                 <a
                   href="#"
-                  className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
-                  aria-current="page"
+                  onClick={() => {
+
+                    setShow(true)
+                    returnDocs();                    
+                    setDocuments(true)
+                    setAppointment(false)
+                  }}
+                  className={`block py-2 pl-3 pr-4  rounded ${documents == true ? "text-blue-700" : "text-gray-900"} hover:text-blue-700 `}
                 >
-                  Find Admin
+                  Share & Get Admin Documents
                 </a>
               </li>
               <li>
                 <a
                   href="#"
-                  onClick={() => setDocuments(!documents)}
-                  className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  onClick={() => {
+                    setAppointment(true)
+                    setDocuments(false)
+                  }}
+                  className={`block py-2 pl-3 pr-4  rounded ${appointment == true ? "text-blue-700" : "text-gray-900"} hover:text-blue-700 `}
                 >
-                  Submit and Get Documents
+                  Schedule Appointments
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  onClick={() => setAppointment(!appointment)}
-                  className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Schedule an appointment
-                </a>
-              </li>
-              <li className="flex rounded-md py-2 gap-3">
+              <li className="flex rounded-md py-2  font-myfont gap-1">
                 <Image
                   src={user?.photoURL}
                   referrerPolicy="no-referrer"
@@ -394,9 +401,9 @@ const Index = () => {
                   width={50}
                   height={50}
                 />
-                <p className="text-lg font-sans font-semibold ml-2">
+                <p className="text-lg font-semibold ml-2">
                   {user?.displayName}
-                  <span className="block text-xs font-serif font-normal">
+                  <span className="block text-xs font-medium">
                     {user?.email}
                   </span>
                 </p>
@@ -411,23 +418,31 @@ const Index = () => {
         </div>
       </nav>
       <div></div>
-      <div className="flex px-10 flex-row gap-4 items-center ">
+      <div className="flex flex-col items-center w-full h-full">
+        <div className="mt-3">
+          <div className="text-center text-[#fa9746] text-xl font-bold">Dashboard panel for Service professsional : </div>
+          <div className="align-center text-center text-[#3d4868] font-medium"> {admin?.display_name} - {admin?.email}</div>
+        </div>
+        {appointment == true && <AppointmentBooking adminId={adminId} />}
+        <div className="flex px-10 flex-row gap-4 items-center ">
+
+        <div className="flex w-1/3 align-middle mt-3">
         {documents == true && (
           <div className="flex flex-col align-middle">
             <div>
               <button
-                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                  className={`${show==true?"bg-[#afc3ff]":"bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
                 onClick={returnDocs}
               >
-                Get Documents uploaded by You
+                  Your Documents
               </button>
             </div>
             <div>
               <button
-                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
+                className={`${show2==true?"bg-[#afc3ff]":"bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
                 onClick={returnSharedDocs}
               >
-                Get Shared Documents 
+                Get Shared Documents
               </button>
             </div>
             {/* <div>
@@ -441,7 +456,7 @@ const Index = () => {
             <div className="flex flex-col">
               <input type="file" onChange={handleChange} />
               <button
-                className="bg-[#f69440] w-[16rem] font-myfont font-normal h-10 align-center my-4 rounded-2xl"
+                className="bg-[#f69440] w-[18rem] font-myfont text-[1.2rem] font-medium hover:bg-[#afc3ff] h-10 align-center my-4 rounded-2xl"
                 onClick={handleFileUpload}
               >
                 Upload
@@ -450,8 +465,8 @@ const Index = () => {
             </div>
           </div>
         )}
-        {appointment == true && <AppointmentBooking adminId={adminId} />}
-        <div className="flex ml-10 mt-4 flex-row">
+      </div>       
+        <div className="flex ml-10 mt-4 w-2/3">
           {type === "User" && (
             <div className="flex flex-col gap-4">
               {Userdocsarr.map((doc) => (
@@ -497,6 +512,7 @@ const Index = () => {
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>

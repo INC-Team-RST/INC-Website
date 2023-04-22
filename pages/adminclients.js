@@ -67,24 +67,24 @@ function Admindashboard() {
     router.push("/");
   };
   return (
-    <div className="w-screen h-screen flex flex-col bg-[#eaf3fa] bg-fixed bg-center font-myfont bg-no-repeat bg-[url('/accounting.png')]">
+    <div className="w-screen h-screen flex flex-col bg-[#eaf3fa] bg-fixed bg-center font-myfont bg-no-repeat bg-[url('/opacity.png')] bg-size-80" >
       <IoLogOut
         fontSize={40}
         className="right-4 top-4 absolute cursor-pointer text-gray-600 mx-3"
         onClick={logout}
       />
-      <div className="text-[1.6rem] text-center text-[#2b468b] my-10 font-bold">
+      <div className="text-[2rem] text-center text-[#2b468b] my-10 font-bold">
         {" "}
-        Your Clients
+        Your Registered Clients
       </div>
-      {users != [] && (
-        <div className="grid grid-cols-4 flex-wrap justify-items-center justify-center items-center my-10 mx-10 gap-10">
-          {users != [] &&
+      {users != [] && users.length > 0 && (
+        <div className="grid grid-cols-3 flex-wrap justify-items-center justify-center items-center my-10 mx-10 gap-10">
+          {users != [] && users.length > 0 &&
             users.map((user, index) => (
               <Link
                 key={index}
                 href={`/admins/${user.id}`}
-                className="flex flex-row px-4 bg-[#eaf3fa] gap-2 align-middle m-6 shadow-xl shadow-slate-300 p-4 rounded-2xl border-2 border-gray-300"
+                className="flex flex-row px-4 bg-[#eaf3fa] gap-2 align-middle shadow-xl shadow-slate-300 p-4 rounded-2xl border-2 border-gray-300"
               >
                 <Image
                   className="rounded-full"
@@ -93,12 +93,12 @@ function Admindashboard() {
                   width={55}
                   height={55}
                 />
-                <div className="align-middle justify-center items-center">
+                <div className="align-middle flex-col  w-full justify-center items-center">
                   <div className="text-xl font-medium ">
                     {" "}
                     {user.display_name}
                   </div>
-                  <div className="text-xl font-normal "> +91 7718984653</div>
+                  <div className="text-xl font-normal ">{user.email}</div>
                 </div>
               </Link>
             ))}
