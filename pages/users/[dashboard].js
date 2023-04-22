@@ -50,9 +50,9 @@ const Index = () => {
 
   const auth = getAuth();
   console.log(router.query);
- //button states
- const [show, setShow] = useState(false);
- const [show2, setShow2] = useState(false);
+  //button states
+  const [show, setShow] = useState(false);
+  const [show2, setShow2] = useState(false);
 
   const adminId = router.query.dashboard;
   const [admin, setAdmin] = useState(null);
@@ -333,10 +333,10 @@ const Index = () => {
   };
   // bg-[url('/accounting.png')]
   return (
-    <div className={`w-full ${documents == true ? "h-screen" : "h-full"} flex flex-col  bg-[#eaf3fa] bg-center font-myfont bg-no-repeat bg-[url('/opacity.png')]`}>
+    <div className={`w-full h-screen flex flex-col  bg-[#eaf3fa] bg-center font-myfont bg-no-repeat bg-[url('/opacity.png')]`}>
       <nav className="bg-[#c2e2fb]">
         <div className="w-full px-12 h-[5rem] align-middle flex flex-wrap items-center justify-between font-myfont mx-auto">
-        <a href={"/"} className="flex items-center">
+          <a href={"/"} className="flex items-center">
             <span className="self-center text-3xl font-extrabold text-[#2c458e] whitespace-nowrap dark:text-white">
               Client<span className="">Hive</span>
             </span>
@@ -364,14 +364,14 @@ const Index = () => {
             </svg>
           </button>
           <div className="hidden w-full md:block md:w-auto" id="navbar-default">
-          <ul className="font-medium flex justify-center items-center flex-col p-4 md:p-0 mt-4 border  rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:border-0">
+            <ul className="font-medium flex justify-center items-center flex-col p-4 md:p-0 mt-4 border  rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:border-0">
               <li>
                 <a
                   href="#"
                   onClick={() => {
 
                     setShow(true)
-                    returnDocs();                    
+                    returnDocs();
                     setDocuments(true)
                     setAppointment(false)
                   }}
@@ -424,28 +424,28 @@ const Index = () => {
           <div className="align-center text-center text-[#3d4868] font-medium"> {admin?.display_name} - {admin?.email}</div>
         </div>
         {appointment == true && <AppointmentBooking adminId={adminId} />}
-        <div className="flex px-10 flex-row gap-4 items-center ">
+        <div className="flex px-10 flex-row gap-4 w-full  justify-center items-center align-middle">
 
-        <div className="flex w-1/3 align-middle mt-3">
-        {documents == true && (
-          <div className="flex flex-col align-middle">
-            <div>
-              <button
-                  className={`${show==true?"bg-[#afc3ff]":"bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
-                onClick={returnDocs}
-              >
-                  Your Documents
-              </button>
-            </div>
-            <div>
-              <button
-                className={`${show2==true?"bg-[#afc3ff]":"bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
-                onClick={returnSharedDocs}
-              >
-                Get Shared Documents
-              </button>
-            </div>
-            {/* <div>
+          <div className="flex w-1/3 align-middle mt-3">
+            {documents == true && (
+              <div className="flex flex-col align-middle">
+                <div>
+                  <button
+                    className={`${show == true ? "bg-[#afc3ff]" : "bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
+                    onClick={returnDocs}
+                  >
+                    Your Documents
+                  </button>
+                </div>
+                <div>
+                  <button
+                    className={`${show2 == true ? "bg-[#afc3ff]" : "bg-[#f69440]"} w-[18rem] font-myfont text-[1.2rem] font-medium h-[4rem] align-center my-4 rounded-2xl`}
+                    onClick={returnSharedDocs}
+                  >
+                    Get Shared Documents
+                  </button>
+                </div>
+                {/* <div>
               <button
                 className="bg-[#f69440] w-[16rem] font-myfont font-normal h-16 align-center my-4 rounded-2xl"
                 onClick={returnAdminDocs}
@@ -453,65 +453,65 @@ const Index = () => {
                 Get Documents from Admin 
               </button>
             </div> */}
-            <div className="flex flex-col">
-              <input type="file" onChange={handleChange} />
-              <button
-                className="bg-[#f69440] w-[18rem] font-myfont text-[1.2rem] font-medium hover:bg-[#afc3ff] h-10 align-center my-4 rounded-2xl"
-                onClick={handleFileUpload}
-              >
-                Upload
-              </button>
+                <div className="flex flex-col">
+                  <input type="file" onChange={handleChange} />
+                  <button
+                    className="bg-[#f69440] w-[18rem] font-myfont text-[1.2rem] font-medium hover:bg-[#afc3ff] h-10 align-center my-4 rounded-2xl"
+                    onClick={handleFileUpload}
+                  >
+                    Upload
+                  </button>
 
-            </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>       
-        <div className="flex ml-10 mt-4 w-2/3">
-          {type === "User" && (
-            <div className="flex flex-col gap-4">
-              {Userdocsarr.map((doc) => (
-                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
-                  <Link href={doc.url} key={doc.id} className="relative">
-                    <div className="flex flex-row">
-                      <Image src="/file.png" alt="icon" width={60} height={60} />
-                      <div className="flex-wrap"> {doc.name}</div>
-                    </div>
-                  </Link>
-                  <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} />
-                </div>
-
-              ))}
-            </div>
-          )}
-          {type === "UserShared" && (
-            <div className="flex flex-col gap-4">
-              {UserSharedocsarr.map((doc) => (
-                <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
-                  <Link href={doc.url} key={doc.id} className="relative">
-                    <div className="flex flex-row">
-                      <Image src="/file.png" alt="icon" width={60} height={60} />
-                      <div className="flex-wrap"> {doc.name}</div>
-                    </div>
-                  </Link>
-                  {/* <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} /> */}
-                </div>
-
-              ))}
-            </div>
-          )}
-          {type === "Admin" && (
-            <div className="flex flex-col gap-4">
-              {Admindocsarr.map((doc) => (
-                <Link href={doc.url} key={doc.id}>
-                  <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
-                    <Image src="/file.png" alt="icon" width={60} height={60} />
-                    {doc.name}
-                    {/* <Image src="/share.png" alt="icon" width={60} height={60} /> */}
+          <div className="flex ml-10 mt-4 w-2/3">
+            {documents == true && type === "User" && (
+              <div className="flex flex-col gap-4">
+                {Userdocsarr.map((doc) => (
+                  <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                    <Link href={doc.url} key={doc.id} className="relative">
+                      <div className="flex flex-row">
+                        <Image src="/file.png" alt="icon" width={60} height={60} />
+                        <div className="flex-wrap"> {doc.name}</div>
+                      </div>
+                    </Link>
+                    <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} />
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
+
+                ))}
+              </div>
+            )}
+            {documents == true && type === "UserShared" && (
+              <div className="flex flex-col gap-4">
+                {UserSharedocsarr.map((doc) => (
+                  <div key={doc.id} className="bg-[#e4edfa] relative rounded-xl border-2 gap-4 p-4 border-[#3d4868] w-full flex flex-row">
+                    <Link href={doc.url} key={doc.id} className="relative">
+                      <div className="flex flex-row">
+                        <Image src="/file.png" alt="icon" width={60} height={60} />
+                        <div className="flex-wrap"> {doc.name}</div>
+                      </div>
+                    </Link>
+                    {/* <Image onClick={() => { handleShare(doc.id) }} className="top-3 right-2 h-6 w-6" src="/share.png" alt="icon" width={20} height={20} /> */}
+                  </div>
+
+                ))}
+              </div>
+            )}
+            {documents == true && type === "Admin" && (
+              <div className="flex flex-col gap-4">
+                {Admindocsarr.map((doc) => (
+                  <Link href={doc.url} key={doc.id}>
+                    <div className="bg-[#e4edfa] rounded-xl border-2 p-4 border-[#3d4868] w-64 flex flex-row">
+                      <Image src="/file.png" alt="icon" width={60} height={60} />
+                      {doc.name}
+                      {/* <Image src="/share.png" alt="icon" width={60} height={60} /> */}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

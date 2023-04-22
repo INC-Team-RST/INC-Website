@@ -179,7 +179,7 @@ function AppointmentBooking(adminId) {
         </div>
       </div>
       <div className="flex flex-col text-center">
-        <button onClick={()=>{getAppointments}} className="text-xl font-semibold text-center">
+        <button onClick={getAppointments} className="text-xl font-semibold text-center">
           {" "}
           Your Booked Appointments{" "}
         </button>
