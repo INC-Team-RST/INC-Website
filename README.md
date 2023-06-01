@@ -1,4 +1,5 @@
-# ClientHive - Connect, Communicate & Collaborate with your clients seamlessly!
+## 'ClientHive' - Connect, Communicate & Collaborate with your clients seamlessly!
+<h2 align="center"><i>An end-to-end collaborative platform clients & service providers</i></h2>
 <img width="1439" alt="Screenshot 2023-05-08 at 8 50 20 PM" src="https://github.com/INC-Team-RST/INC-Website/assets/86364275/59c62a25-92e6-4c43-8b5f-2887db3cf2f8">
 <h3 align="center">Home page with 2 user logins </h3>
 <img width="1439" alt="Screenshot 2023-05-08 at 9 11 41 PM" src="https://github.com/INC-Team-RST/INC-Website/assets/86364275/1f5b5bb7-850a-499c-84a2-635f8bb805e2">
